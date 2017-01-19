@@ -38,7 +38,7 @@
             pre;                                                     \
             __asm volatile("" ::: /* pretend to clobber */ "memory"); \
             RDTSC_START(tm1);                                \
-            if( test != check) printf("bug %zu %zu ",test, check);                                                     \
+            if( test != check) printf("bug");                                                     \
             RDTSC_FINAL(tm2);                                \
             uint64_t tmus = tm2- tm1 ;           \
             if (tmus < min_diff) min_diff = tmus;       \
@@ -80,5 +80,13 @@ int main() {
   size_t howmanywhite;
 
   BEST_TIME_CHECK(despace(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
+#ifdef __AVX2__
+  BEST_TIME_CHECK(avx2_despace(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
+#endif
+#ifdef __SSE4_1__
+  BEST_TIME_CHECK(sse_despace(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
+  BEST_TIME_CHECK(sse4_despace(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
+
+#endif
   free(buffer);
 }
