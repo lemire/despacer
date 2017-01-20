@@ -86,7 +86,6 @@ int main() {
   BEST_TIME_CHECK(avx2_despace(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
 #endif
 #ifdef __SSE4_1__
-  BEST_TIME_CHECK(sse_despace(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
   BEST_TIME_CHECK(sse4_despace(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
   BEST_TIME_CHECK(sse4_despace_trail(buffer, N), N-howmanywhite, howmanywhite = fillwithtext(buffer, N) ,repeat, N);
 
