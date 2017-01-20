@@ -1,5 +1,5 @@
 # despacer
-Fast C library to remove white space from strings
+Fast C library to remove white space from strings (also called "strip white space")
 
 We want to remove the space (' ') and the line feeds characters ('\n', '\r') from a string
 as fast as possible. To avoid unnecessary allocations, we wish to do the processing in-place.
