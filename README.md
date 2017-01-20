@@ -22,10 +22,18 @@ Possible results...
 
 ```
 $ ./despacebenchmark
-despace(buffer, N):  6.253906 cycles / ops
-avx2_despace(buffer, N):  3.287109 cycles / ops
-sse_despace(buffer, N):  2.951172 cycles / ops
-sse4_despace(buffer, N):  0.791016 cycles / ops
+memcpy(tmpbuffer,buffer,N):  0.085938 cycles / ops
+countspaces(buffer, N):  3.689453 cycles / ops
+despace(buffer, N):  5.283203 cycles / ops
+despace64(buffer, N):  2.718750 cycles / ops
+despace_to(buffer, N, tmpbuffer):  5.519531 cycles / ops
+avx2_countspaces(buffer, N):  0.345703 cycles / ops
+avx2_despace(buffer, N):  3.984375 cycles / ops
+sse4_despace(buffer, N):  0.861328 cycles / ops
+sse4_despace_trail(buffer, N):  1.468750 cycles / ops
+sse42_despace_branchless(buffer, N):  0.636719 cycles / ops
+sse42_despace_branchless_lookup(buffer, N):  0.621094 cycles / ops
+sse42_despace_to(buffer, N,tmpbuffer):  1.693359 cycles / ops
 ```
 
 This indicates how many cycles are used to despace one byte.

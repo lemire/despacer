@@ -329,5 +329,57 @@ static inline size_t sse42_despace(char *bytes, size_t howmany) {
   }
   return pos;
 }
+
+static inline size_t sse42_despace_branchless(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  __m128i targetchars =
+      _mm_set_epi8(' ', '\n', '\r', ' ', ' ', '\n', '\r', ' ', ' ', '\n', '\r',
+                   ' ', ' ', '\n', '\r', ' ');
+  size_t i = 0;
+  for (; i + 15 < howmany; i += 16) {
+    __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
+    int mask16 = _mm_cvtsi128_si32(
+        _mm_cmpestrm(targetchars, 3, x, 16,
+                     _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK));
+    x = _mm_shuffle_epi8(
+          x, _mm_loadu_si128((const __m128i *)despace_mask16 + mask16));
+    _mm_storeu_si128((__m128i *)(bytes + pos), x);
+    pos += 16 - _mm_popcnt_u32(mask16);
+  }
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      continue;
+    }
+    bytes[pos++] = c;
+  }
+  return pos;
+}
+
+static inline size_t sse42_despace_branchless_lookup(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  __m128i targetchars =
+      _mm_set_epi8(' ', '\n', '\r', ' ', ' ', '\n', '\r', ' ', ' ', '\n', '\r',
+                   ' ', ' ', '\n', '\r', ' ');
+  size_t i = 0;
+  for (; i + 15 < howmany; i += 16) {
+    __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
+    int mask16 = _mm_cvtsi128_si32(
+        _mm_cmpestrm(targetchars, 3, x, 16,
+                     _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK));
+    x = _mm_shuffle_epi8(
+          x, _mm_loadu_si128((const __m128i *)despace_mask16 + mask16));
+    _mm_storeu_si128((__m128i *)(bytes + pos), x);
+    pos += 16 - despace_popcnt16[mask16];
+  }
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      continue;
+    }
+    bytes[pos++] = c;
+  }
+  return pos;
+}
 #endif
 #endif
