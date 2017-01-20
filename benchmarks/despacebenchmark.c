@@ -104,7 +104,8 @@ int main() {
 
   BEST_TIME_NOCHECK(memcpy(tmpbuffer,buffer,N),
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
-
+  BEST_TIME_CHECK(countspaces(buffer, N), howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(despace64(buffer, N), N - howmanywhite,
@@ -112,6 +113,8 @@ int main() {
   BEST_TIME_CHECK(despace_to(buffer, N, tmpbuffer), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #ifdef __AVX2__
+  BEST_TIME_CHECK(avx2_countspaces(buffer, N), howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(avx2_despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif

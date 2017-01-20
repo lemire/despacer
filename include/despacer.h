@@ -25,6 +25,16 @@ static inline size_t despace(char *bytes, size_t howmany) {
   }
   return pos;
 }
+static inline size_t countspaces(const char *bytes, size_t howmany) {
+  size_t count = 0;
+  for (size_t i = 0; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      count ++;
+    }
+  }
+  return count;
+}
 // standard bit twiddling
 #define haszero(v)                                                             \
   (((v)-UINT64_C(0x0101010101010101)) & ~(v)&UINT64_C(0x8080808080808080))
@@ -139,6 +149,32 @@ static inline size_t avx2_despace(char *bytes, size_t howmany) {
   }
   return pos;
 }
+
+static inline size_t avx2_countspaces(const char *bytes, size_t howmany) {
+  size_t count = 0;
+  __m256i spaces = _mm256_set1_epi8(' ');
+  __m256i newline = _mm256_set1_epi8('\n');
+  __m256i carriage = _mm256_set1_epi8('\r');
+  size_t i = 0;
+  for (; i + 31 < howmany; i += 32) {
+    __m256i x = _mm256_loadu_si256((const __m256i *)(bytes + i));
+    // we do it the naive way, could be smarter?
+    __m256i xspaces = _mm256_cmpeq_epi8(x, spaces);
+    __m256i xnewline = _mm256_cmpeq_epi8(x, newline);
+    __m256i xcarriage = _mm256_cmpeq_epi8(x, carriage);
+    __m256i anywhite =
+        _mm256_or_si256(_mm256_or_si256(xspaces, xnewline), xcarriage);
+    count += _mm_popcnt_u32(_mm256_movemask_epi8(anywhite));
+  }
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      count ++ ;
+    }
+  }
+  return count;
+}
+
 
 #endif
 
