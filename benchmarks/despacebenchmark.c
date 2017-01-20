@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <string.h>
 #include "despacer.h"
 
 #define RDTSC_START(cycles)                                                    \
@@ -26,6 +27,27 @@
                    : "=r"(cyc_high), "=r"(cyc_low)::"%rax", "%rbx", "%rcx",    \
                      "%rdx");                                                  \
     (cycles) = ((uint64_t)cyc_high << 32) | cyc_low;                           \
+  } while (0)
+
+#define BEST_TIME_NOCHECK(test, pre, repeat, number)                      \
+  do {                                                                         \
+    printf("%s: ", #test);                                                     \
+    fflush(NULL);                                                              \
+    uint64_t tm1, tm2;                                                         \
+    uint64_t min_diff = (uint64_t)-1;                                          \
+    for (int i = 0; i < repeat; i++) {                                         \
+      pre;                                                                     \
+      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
+      RDTSC_START(tm1);                                                        \
+      test;                                                        \
+      RDTSC_FINAL(tm2);                                                        \
+      uint64_t tmus = tm2 - tm1;                                               \
+      if (tmus < min_diff)                                                     \
+        min_diff = tmus;                                                       \
+    }                                                                          \
+    printf(" %f cycles / ops", min_diff * 1.0 / number);                       \
+    printf("\n");                                                              \
+    fflush(NULL);                                                              \
   } while (0)
 
 #define BEST_TIME_CHECK(test, check, pre, repeat, number)                      \
@@ -79,6 +101,9 @@ int main() {
   char *tmpbuffer = malloc(N);
   int repeat = 100;
   size_t howmanywhite;
+
+  BEST_TIME_NOCHECK(memcpy(tmpbuffer,buffer,N),
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
 
   BEST_TIME_CHECK(despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
