@@ -8,7 +8,7 @@ else
 CFLAGS = -fPIC -std=c99 -O3  -march=native -Wall -Wextra -Wshadow
 endif # debug
 all: despacebenchmark
-HEADERS=./include/despacer.h
+HEADERS=./include/despacer.h ./include/despacer_tables.h
 
 despacebenchmark: ./benchmarks/despacebenchmark.c $(HEADERS)
 	$(CC) $(CFLAGS) -o despacebenchmark ./benchmarks/despacebenchmark.c -Iinclude
