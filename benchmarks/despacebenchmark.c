@@ -95,7 +95,9 @@ int main() {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
 #ifdef __SSE4_2__
-  BEST_TIME_CHECK(sse42_despace(buffer, N,tmpbuffer), N - howmanywhite,
+  BEST_TIME_CHECK(sse42_despace(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(sse42_despace_to(buffer, N,tmpbuffer), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
   free(buffer);
