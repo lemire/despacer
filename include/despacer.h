@@ -25,6 +25,48 @@ static inline size_t despace(char *bytes, size_t howmany) {
   }
   return pos;
 }
+// standard bit twiddling
+#define haszero(v)                                                             \
+  (((v)-UINT64_C(0x0101010101010101)) & ~(v)&UINT64_C(0x8080808080808080))
+
+static inline size_t despace64(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  size_t i = 0;
+  uint64_t word = 0;
+  uint64_t mask1 = ~UINT64_C(0) / 255 * (uint64_t)('\r');
+  uint64_t mask2 = ~UINT64_C(0) / 255 * (uint64_t)('\n');
+  uint64_t mask3 = ~UINT64_C(0) / 255 * (uint64_t)(' ');
+
+  for (; i + 7 < howmany; i += 8) {
+    memcpy(&word, bytes + i, sizeof(word));
+    uint64_t xor1 = word ^ mask1;
+    uint64_t xor2 = word ^ mask2;
+    uint64_t xor3 = word ^ mask3;
+
+    if (haszero(xor1) ^ haszero(xor2) ^ haszero(xor3)) {
+      for (int k = 0; k < 8; k++) {
+        char c = bytes[i + k];
+        if (c == '\r' || c == '\n' || c == ' ') {
+          continue;
+        }
+        bytes[pos++] = c;
+      }
+
+    } else {
+      memmove(bytes + pos, bytes + i, sizeof(word));
+      pos += 8;
+    }
+  }
+
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      continue;
+    }
+    bytes[pos++] = c;
+  }
+  return pos;
+}
 
 /**
 * remove spaces from string bytes (UTF-8 or ASCII) containing "howmany"
@@ -220,6 +262,7 @@ static inline size_t sse42_despace_to(const char *__restrict__ bytes,
   }
   return pos;
 }
+
 static inline size_t sse42_despace(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i targetchars =
