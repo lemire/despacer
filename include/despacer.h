@@ -191,4 +191,32 @@ static inline size_t sse4_despace_trail(char *bytes, size_t howmany) {
 
 #endif
 
+#ifdef __SSE4_2__
+
+#include <x86intrin.h>
+
+
+static inline size_t sse42_despace(const char *bytes, size_t howmany, char * out) {
+  size_t pos = 0;
+  __m128i targetchars = _mm_set_epi8(' ', '\n', '\r',' ',
+  ' ', '\n', '\r',' ',' ', '\n', '\r',' ',' ', '\n', '\r',' ');
+  size_t i = 0;
+  for (; i + 15 < howmany;) {
+    __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
+    int result = _mm_cmpestri(targetchars, 3, x , 16, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY| _SIDD_BIT_MASK);
+    i += result+(result < 16);
+    _mm_storeu_si128((__m128i *)(out + pos), x);
+    pos += result;
+  }
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      continue;
+    }
+    out[pos++] = c;
+  }
+  return pos;
+}
+
+#endif
 #endif

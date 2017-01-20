@@ -93,7 +93,10 @@ int main() {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_trail(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
-
+#endif
+#ifdef __SSE4_2__
+  BEST_TIME_CHECK(sse42_despace(buffer, N,tmpbuffer), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
   free(buffer);
 }
