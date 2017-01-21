@@ -18,6 +18,8 @@ make
 ./despacebenchmark
 ```
 
+Note that clang seems to give better results than gcc.
+
 Possible results...
 
 ```
