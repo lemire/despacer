@@ -11,6 +11,9 @@ Let us consider any array of bytes representing a string in one of these encodin
 
 How fast can we go?
 
+Blog post: 
+http://lemire.me/blog/2017/01/20/how-quickly-can-you-remove-spaces-from-a-string/
+
 
 Usage:
 ```
