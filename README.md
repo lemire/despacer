@@ -23,17 +23,18 @@ Possible results...
 ```
 $ ./despacebenchmark
 memcpy(tmpbuffer,buffer,N):  0.085938 cycles / ops
-countspaces(buffer, N):  3.689453 cycles / ops
-despace(buffer, N):  5.283203 cycles / ops
-despace64(buffer, N):  2.718750 cycles / ops
-despace_to(buffer, N, tmpbuffer):  5.519531 cycles / ops
-avx2_countspaces(buffer, N):  0.345703 cycles / ops
-avx2_despace(buffer, N):  3.984375 cycles / ops
-sse4_despace(buffer, N):  0.861328 cycles / ops
-sse4_despace_trail(buffer, N):  1.468750 cycles / ops
-sse42_despace_branchless(buffer, N):  0.636719 cycles / ops
-sse42_despace_branchless_lookup(buffer, N):  0.621094 cycles / ops
-sse42_despace_to(buffer, N,tmpbuffer):  1.693359 cycles / ops
+countspaces(buffer, N):  3.671875 cycles / ops
+despace(buffer, N):  5.242188 cycles / ops
+despace64(buffer, N):  2.613281 cycles / ops
+despace_to(buffer, N, tmpbuffer):  5.656250 cycles / ops
+avx2_countspaces(buffer, N):  0.361328 cycles / ops
+avx2_despace(buffer, N):  3.876953 cycles / ops
+sse4_despace(buffer, N):  0.835938 cycles / ops
+sse4_despace_branchless(buffer, N):  0.392578 cycles / ops
+sse4_despace_trail(buffer, N):  1.609375 cycles / ops
+sse42_despace_branchless(buffer, N):  0.666016 cycles / ops
+sse42_despace_branchless_lookup(buffer, N):  0.677734 cycles / ops
+sse42_despace_to(buffer, N,tmpbuffer):  1.652344 cycles / ops
 ```
 
 This indicates how many cycles are used to despace one byte.
