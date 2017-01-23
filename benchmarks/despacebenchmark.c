@@ -95,10 +95,19 @@ size_t fillwithtext(char *buffer, size_t size) {
   return howmany;
 }
 
-int main() {
+int main(int argc, char ** argv) {
   const int N = 1024;
-  char *buffer = malloc(N);
-  char *tmpbuffer = malloc(N);
+  int alignoffset = 0;
+  if(argc>1)  {
+    alignoffset = atoi(argv[1]);
+    printf("alignment offset = %d \n", alignoffset);
+  }
+  char *origbuffer = malloc(N + alignoffset);
+  char *origtmpbuffer = malloc(N + alignoffset);
+  char *buffer = origbuffer + alignoffset;
+  char *tmpbuffer = origtmpbuffer + alignoffset;
+  printf("pointer alignment = %d bytes \n", 1<< __builtin_ctzll((uintptr_t)(const void *)(buffer)));
+  
   int repeat = 100;
   size_t howmanywhite;
 
@@ -137,5 +146,6 @@ int main() {
   BEST_TIME_CHECK(sse42_despace_to(buffer, N,tmpbuffer), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
-  free(buffer);
+  free(origbuffer);
+  free(origtmpbuffer);
 }
