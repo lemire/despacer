@@ -80,7 +80,7 @@ static inline size_t despace64(char *bytes, size_t howmany) {
     uint64_t xor2 = word ^ mask2;
     uint64_t xor3 = word ^ mask3;
 
-    if (haszero(xor1) ^ haszero(xor2) ^ haszero(xor3)) {
+    if (haszero(xor1) || haszero(xor2) || haszero(xor3)) {
       for (int k = 0; k < 8; k++) {
         char c = bytes[i + k];
         if (c == '\r' || c == '\n' || c == ' ') {
