@@ -107,7 +107,7 @@ int main(int argc, char ** argv) {
   char *buffer = origbuffer + alignoffset;
   char *tmpbuffer = origtmpbuffer + alignoffset;
   printf("pointer alignment = %d bytes \n", 1<< __builtin_ctzll((uintptr_t)(const void *)(buffer)));
-  
+
   int repeat = 100;
   size_t howmanywhite;
 
@@ -133,6 +133,10 @@ int main(int argc, char ** argv) {
   BEST_TIME_CHECK(sse4_despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_branchless(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(sse4_despace_branchless_u2(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(sse4_despace_branchless_u4(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_branchless_mask8(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
