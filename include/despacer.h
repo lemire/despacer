@@ -278,6 +278,37 @@ static inline size_t sse4_despace_branchless(char *bytes, size_t howmany) {
   return pos;
 }
 
+static inline size_t sse4_despace_branchless_mask8(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  __m128i spaces = _mm_set1_epi8(' ');
+  __m128i newline = _mm_set1_epi8('\n');
+  __m128i carriage = _mm_set1_epi8('\r');
+  size_t i = 0;
+  for (; i + 15 < howmany; i += 16) {
+    __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
+    // we do it the naive way, could be smarter?
+    __m128i xspaces = _mm_cmpeq_epi8(x, spaces);
+    __m128i xnewline = _mm_cmpeq_epi8(x, newline);
+    __m128i xcarriage = _mm_cmpeq_epi8(x, carriage);
+    __m128i anywhite = _mm_or_si128(_mm_or_si128(xspaces, xnewline), xcarriage);
+    int mask16 = _mm_movemask_epi8(anywhite);
+    __m128i m1 =  _mm_loadu_si128((const __m128i *)despace_mask8_1 + (mask16 & 0xFF) );
+    __m128i m2 =  _mm_loadu_si128((const __m128i *)despace_mask8_2 + (mask16 >> 8) );
+     x = _mm_shuffle_epi8(
+          x, _mm_or_si128(m1,m2));
+    _mm_storeu_si128((__m128i *)(bytes + pos), x);
+    pos += 16 - _mm_popcnt_u32(mask16);
+  }
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      continue;
+    }
+    bytes[pos++] = c;
+  }
+  return pos;
+}
+
 
 /**
 * remove spaces (in-place) from string bytes (UTF-8 or ASCII) containing
