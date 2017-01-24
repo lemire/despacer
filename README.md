@@ -21,24 +21,30 @@ make
 ./despacebenchmark
 ```
 
+Note that clang seems to give better results than gcc.
+
 Possible results...
 
 ```
 $ ./despacebenchmark
-memcpy(tmpbuffer,buffer,N):  0.085938 cycles / ops
-countspaces(buffer, N):  3.679688 cycles / ops
-despace(buffer, N):  5.119141 cycles / ops
-faster_despace(buffer, N):  1.685547 cycles / ops
-despace64(buffer, N):  2.623047 cycles / ops
-despace_to(buffer, N, tmpbuffer):  5.419922 cycles / ops
-avx2_countspaces(buffer, N):  0.361328 cycles / ops
-avx2_despace(buffer, N):  3.679688 cycles / ops
-sse4_despace(buffer, N):  0.767578 cycles / ops
-sse4_despace_branchless(buffer, N):  0.392578 cycles / ops
-sse4_despace_trail(buffer, N):  1.470703 cycles / ops
-sse42_despace_branchless(buffer, N):  0.603516 cycles / ops
-sse42_despace_branchless_lookup(buffer, N):  0.619141 cycles / ops
-sse42_despace_to(buffer, N,tmpbuffer):  1.716797 cycles / ops
+pointer alignment = 16 bytes
+memcpy(tmpbuffer,buffer,N):  0.109375 cycles / ops
+countspaces(buffer, N):  3.675781 cycles / ops
+despace(buffer, N):  5.574219 cycles / ops
+faster_despace(buffer, N):  1.720703 cycles / ops
+despace64(buffer, N):  2.523438 cycles / ops
+despace_to(buffer, N, tmpbuffer):  5.587891 cycles / ops
+avx2_countspaces(buffer, N):  0.365234 cycles / ops
+avx2_despace(buffer, N):  3.640625 cycles / ops
+sse4_despace(buffer, N):  0.808594 cycles / ops
+sse4_despace_branchless(buffer, N):  0.386719 cycles / ops
+sse4_despace_branchless_u2(buffer, N):  0.380859 cycles / ops
+sse4_despace_branchless_u4(buffer, N):  0.357422 cycles / ops
+sse4_despace_branchless_mask8(buffer, N):  0.464844 cycles / ops
+sse4_despace_trail(buffer, N):  1.537109 cycles / ops
+sse42_despace_branchless(buffer, N):  0.666016 cycles / ops
+sse42_despace_branchless_lookup(buffer, N):  0.679688 cycles / ops
+sse42_despace_to(buffer, N,tmpbuffer):  1.685547 cycles / ops
 ```
 
 This indicates how many cycles are used to despace one byte.

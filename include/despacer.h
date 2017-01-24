@@ -259,16 +259,14 @@ static inline size_t sse4_despace_branchless(char *bytes, size_t howmany) {
   size_t i = 0;
   for (; i + 15 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    // we do it the naive way, could be smarter?
     __m128i xspaces = _mm_cmpeq_epi8(x, spaces);
     __m128i xnewline = _mm_cmpeq_epi8(x, newline);
     __m128i xcarriage = _mm_cmpeq_epi8(x, carriage);
     __m128i anywhite = _mm_or_si128(_mm_or_si128(xspaces, xnewline), xcarriage);
-    int mask16 = _mm_movemask_epi8(anywhite);
-    x = _mm_shuffle_epi8(
-          x, _mm_loadu_si128((const __m128i *)despace_mask16 + mask16));
+    uint64_t mask16 = _mm_movemask_epi8(anywhite);
+    x = _mm_shuffle_epi8(x, *((__m128i *)despace_mask16 + mask16));
     _mm_storeu_si128((__m128i *)(bytes + pos), x);
-    pos += 16 - _mm_popcnt_u32(mask16);
+    pos += 16 - _mm_popcnt_u64(mask16);
   }
   for (; i < howmany; i++) {
     char c = bytes[i];
