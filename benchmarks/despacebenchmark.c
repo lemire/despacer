@@ -89,7 +89,7 @@ size_t fillwithtext(char *buffer, size_t size) {
     } else {
       do {
         buffer[i] = (char)rand();
-      } while (buffer[i] == '\r' || buffer[i] == '\n' || buffer[i] == ' ');
+      } while (buffer[i] <= 32);
     }
   }
   return howmany;
@@ -115,9 +115,15 @@ int main(int argc, char ** argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(countspaces(buffer, N), howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(countspaces32(buffer, N), howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace32(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(faster_despace(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(faster_despace32(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(despace64(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
@@ -138,6 +144,8 @@ int main(int argc, char ** argv) {
   BEST_TIME_CHECK(sse4_despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_branchless(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(sse4_despace_branchless32(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_branchless_u2(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);

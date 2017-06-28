@@ -42,16 +42,40 @@ static inline size_t despace(char *bytes, size_t howmany) {
   }
   return pos;
 }
-static inline size_t faster_despace( char* bytes, size_t howmany )
-{
-  size_t i = 0, pos = 0;
-  while( i < howmany )
-  {
-    bytes[pos] = bytes[i++];
-    pos += jump_table[ (unsigned char)bytes[pos] ];
+
+static inline size_t despace32(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  for (size_t i = 0; i < howmany; i++) {
+    char c = bytes[i];
+    if ((unsigned char) c <= 32) {
+      continue;
+    }
+    bytes[pos++] = c;
   }
   return pos;
 }
+static inline size_t faster_despace( char* bytes, size_t howmany )
+{
+  size_t i = 0, pos = 0;
+  while( i < howmany ) {
+    const char c = bytes[i++];
+    bytes[pos] = c;
+    pos += jump_table[ (unsigned char)c ];
+  }
+  return pos;
+}
+static inline size_t faster_despace32( char* bytes, size_t howmany )
+{
+  size_t i = 0, pos = 0;
+  while( i < howmany ) {
+    const char c = bytes[i++];
+    bytes[pos] = c;
+    pos +=  ((unsigned char)c > 32 ? 1 : 0);
+  }
+  return pos;
+}
+
+
 static inline size_t countspaces(const char *bytes, size_t howmany) {
   size_t count = 0;
   for (size_t i = 0; i < howmany; i++) {
@@ -59,6 +83,15 @@ static inline size_t countspaces(const char *bytes, size_t howmany) {
     if (c == '\r' || c == '\n' || c == ' ') {
       count ++;
     }
+  }
+  return count;
+}
+
+static inline size_t countspaces32(const char *bytes, size_t howmany) {
+  size_t count = 0;
+  for (size_t i = 0; i < howmany; i++) {
+    const char c = bytes[i];
+    count += ( c <= 32 ? 1 : 0);
   }
   return count;
 }
@@ -146,7 +179,7 @@ static inline void _mm256_storeu2_m128i(__m128i *__addr_hi, __m128i *__addr_lo, 
   __v128 = _mm256_extractf128_si256(__a, 1);
   _mm_storeu_si128(__addr_hi, __v128);
 }
-#endif 
+#endif
 
 /**
 * remove spaces (in-place) from string bytes (UTF-8 or ASCII) containing
@@ -294,6 +327,28 @@ static inline size_t sse4_despace_branchless(char *bytes, size_t howmany) {
   }
   return pos;
 }
+
+static inline size_t sse4_despace_branchless32(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  __m128i spaces = _mm_set1_epi8(' ');
+  size_t i = 0;
+  for (; i + 15 < howmany; i += 16) {
+    __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
+    __m128i anywhite = _mm_cmpeq_epi8( spaces, _mm_max_epu8(spaces,x));
+    uint64_t mask16 = _mm_movemask_epi8(anywhite);
+    x = _mm_shuffle_epi8(x, *((__m128i *)despace_mask16 + mask16));
+    _mm_storeu_si128((__m128i *)(bytes + pos), x);
+    pos += 16 - _mm_popcnt_u64(mask16);
+  }
+
+  for (; i < howmany; i++) {
+    const char c = bytes[i];
+    bytes[pos] = c;
+    pos +=  ((unsigned char)c > 32 ? 1 : 0);
+  }
+  return pos;
+}
+
 
 static inline __m128i cleanm128(__m128i x, __m128i spaces, __m128i newline, __m128i carriage, int * mask16) {
     __m128i xspaces = _mm_cmpeq_epi8(x, spaces);
