@@ -29,7 +29,7 @@
     (cycles) = ((uint64_t)cyc_high << 32) | cyc_low;                           \
   } while (0)
 
-#define BEST_TIME_NOCHECK(test, pre, repeat, number)                      \
+#define BEST_TIME_NOCHECK(test, pre, repeat, number)                           \
   do {                                                                         \
     printf("%s: ", #test);                                                     \
     fflush(NULL);                                                              \
@@ -39,7 +39,7 @@
       pre;                                                                     \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
       RDTSC_START(tm1);                                                        \
-      test;                                                        \
+      test;                                                                    \
       RDTSC_FINAL(tm2);                                                        \
       uint64_t tmus = tm2 - tm1;                                               \
       if (tmus < min_diff)                                                     \
@@ -95,10 +95,10 @@ size_t fillwithtext(char *buffer, size_t size) {
   return howmany;
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
   const int N = 1024;
   int alignoffset = 0;
-  if(argc>1)  {
+  if (argc > 1) {
     alignoffset = atoi(argv[1]);
     printf("alignment offset = %d \n", alignoffset);
   }
@@ -106,13 +106,14 @@ int main(int argc, char ** argv) {
   char *origtmpbuffer = malloc(N + alignoffset);
   char *buffer = origbuffer + alignoffset;
   char *tmpbuffer = origtmpbuffer + alignoffset;
-  printf("pointer alignment = %d bytes \n", 1<< __builtin_ctzll((uintptr_t)(const void *)(buffer)));
+  printf("pointer alignment = %d bytes \n",
+         1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
 
   int repeat = 100;
   size_t howmanywhite;
 
-  BEST_TIME_NOCHECK(memcpy(tmpbuffer,buffer,N),
-                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_NOCHECK(memcpy(tmpbuffer, buffer, N),
+                    howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(countspaces(buffer, N), howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(countspaces32(buffer, N), howmanywhite,
@@ -151,8 +152,6 @@ int main(int argc, char ** argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_branchless_u4(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
-  BEST_TIME_CHECK(sse4_despace_branchless_mask8(buffer, N), N - howmanywhite,
-                  howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_trail(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
@@ -162,7 +161,7 @@ int main(int argc, char ** argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse42_despace_branchless_lookup(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
-  BEST_TIME_CHECK(sse42_despace_to(buffer, N,tmpbuffer), N - howmanywhite,
+  BEST_TIME_CHECK(sse42_despace_to(buffer, N, tmpbuffer), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
   free(origbuffer);
