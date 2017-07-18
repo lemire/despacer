@@ -96,6 +96,9 @@ size_t fillwithtext(char *buffer, size_t size) {
 }
 
 int main(int argc, char **argv) {
+#ifdef __SSSE3__
+  gen_table_1mb();
+#endif
   const int N = 1024;
   int alignoffset = 0;
   if (argc > 1) {
@@ -130,6 +133,20 @@ int main(int argc, char **argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(despace_to(buffer, N, tmpbuffer), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace_branchless(tmpbuffer, buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace_cmov(tmpbuffer, buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace_table(tmpbuffer, buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+#ifdef __SSSE3__
+  BEST_TIME_CHECK(despace_ssse3_cumsum(tmpbuffer, buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace_ssse3_lut_1kb(tmpbuffer, buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace_ssse3_lut_1mb(tmpbuffer, buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+#endif
 #ifdef __AVX2__
   BEST_TIME_CHECK(avx2_countspaces(buffer, N), howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
