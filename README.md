@@ -43,7 +43,6 @@ sse4_despace(buffer, N):  0.734375 cycles / ops
 sse4_despace_branchless(buffer, N):  0.384766 cycles / ops
 sse4_despace_branchless_u2(buffer, N):  0.380859 cycles / ops
 sse4_despace_branchless_u4(buffer, N):  0.351562 cycles / ops
-sse4_despace_branchless_mask8(buffer, N):  0.480469 cycles / ops
 sse4_despace_trail(buffer, N):  1.142578 cycles / ops
 sse42_despace_branchless(buffer, N):  0.763672 cycles / ops
 sse42_despace_branchless_lookup(buffer, N):  0.673828 cycles / ops
