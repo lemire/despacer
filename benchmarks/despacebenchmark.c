@@ -150,6 +150,8 @@ int main(int argc, char **argv) {
 #ifdef __AVX2__
   BEST_TIME_CHECK(avx2_countspaces(buffer, N), howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace_avx2_vpermd(tmpbuffer, buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(avx2_despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(avx2_despace_branchless(buffer, N), N - howmanywhite,

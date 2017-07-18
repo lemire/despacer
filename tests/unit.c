@@ -109,6 +109,8 @@ int main() {
     DESPACE_CHECK_SD(despace_table,N,tmp,solution,howmanynonwhite);
 #ifdef __AVX2__
     memcpy(tmp,buffer,N);
+    DESPACE_CHECK_SD(despace_avx2_vpermd,N,tmp,solution,howmanynonwhite);
+    memcpy(tmp,buffer,N);
     DESPACE_CHECK(avx2_despace,N,tmp,solution,howmanynonwhite);
     memcpy(tmp,buffer,N);
     DESPACE_CHECK(avx2_despace_branchless,N,tmp,solution,howmanynonwhite);

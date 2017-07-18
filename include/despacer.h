@@ -773,6 +773,84 @@ static inline void _mm256_storeu2_m128i(__m128i *__addr_hi, __m128i *__addr_lo,
 }
 #endif
 
+// credit: agrit
+size_t despace_avx2_vpermd( void* dst_void, void* src_void, size_t length )
+{
+	uint8_t* src = (uint8_t*)src_void;
+	uint8_t* dst = (uint8_t*)dst_void;
+	const __m256i lut_cntrl = _mm256_setr_epi8(
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00,
+		//
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00
+	);
+	// hi and lo dwords are combined into a qword using xor
+	// qword = dword(lo[0b000] ^ hi[id]), dword(lo[id] ^ hi[0b000])
+	// byte_0 of lo always gets shifted off unless the id is 0b111
+	// so if lo[0b111] ^ hi[0b000] then byte_0 must be zero
+	const __m256i lut_lo = _mm256_set_epi32(
+		0x03020107, // 111
+		0x03020000, // 110
+		0x03010000, // 101
+		0x03000000, // 100
+		0x02010000, // 011
+		0x02000000, // 010
+		0x01000000, // 001
+		0x00000000  // 000
+		);
+	const __m256i lut_hi = _mm256_set_epi32(
+		0x07060504, // 111
+		0x00070605, // 110
+		0x00070604, // 101
+		0x00000706, // 100
+		0x00070504, // 011
+		0x00000705, // 010
+		0x00000704, // 001
+		0x00000007  // 000
+		);
+	const __m256i mask_20  = _mm256_set1_epi8( 0x20 );
+	const __m256i mask_70  = _mm256_set1_epi8( 0x70 );
+	const __m256i mask_sad = _mm256_set1_epi64x( 0x80A0908884828180 );
+	__m256i temp_08 = _mm256_srli_epi64(mask_20, 2);
+	const __m256i mask_range = _mm256_blend_epi32(temp_08, _mm256_setzero_si256(), 0x33); // 0x08080808080808080000000000000000
+	const __m256i mask_shift = _mm256_blend_epi32(temp_08, _mm256_setzero_si256(), 0xAA); // 0x00000000080808080000000008080808
+	for( ; length >= 32; length-=32 ){
+		__m256i r0,r1,r2,r3,r4;
+		r0 = _mm256_loadu_si256((__m256i *)src); // asrc
+		src += 32;
+		//
+		r1 = _mm256_adds_epu8(mask_70, r0);
+		r2 = _mm256_cmpeq_epi8(mask_20, r0);
+		r1 = _mm256_shuffle_epi8(lut_cntrl, r1);
+		r1 = _mm256_or_si256(r1, r2); // bytemask of spaces
+		//
+		r2 = _mm256_andnot_si256(r1, mask_sad);
+		r1 = _mm256_and_si256(r1, mask_shift);
+		r2 = _mm256_sad_epu8(r2,_mm256_setzero_si256()); // non-space -> bitmap[5:0],population count[15:7]
+		r1 = _mm256_sad_epu8(r1,_mm256_setzero_si256()); // bit shift amount to drop space bytes on low end of qword
+		r3 = _mm256_permutevar8x32_epi32(lut_lo, r2); // lo
+		r2 = _mm256_slli_epi64(r2, 29); // move hi index to 2nd dword
+		r4 = _mm256_permutevar8x32_epi32(lut_hi, r2); // hi
+		r2 = _mm256_srli_epi64(r2, 36); // popcnt
+		r3 = _mm256_or_si256(r3, mask_range); // change range of hi_qw from 7:0 to 15:8
+		r3 = _mm256_xor_si256(r3, r4); // merge lo & hi dwords
+		r3 = _mm256_srlv_epi64(r3, r1);
+		//
+		r0 = _mm256_shuffle_epi8(r0, r3);
+		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 0);
+		dst += _mm256_extract_epi64(r2, 0);
+		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 1);
+		dst += _mm256_extract_epi64(r2, 1);
+		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 2);
+		dst += _mm256_extract_epi64(r2, 2);
+		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 3);
+		dst += _mm256_extract_epi64(r2, 3);
+	}
+	dst += despace_branchless(dst, src, length);
+	return (size_t)(dst - ((uint8_t*)dst_void));
+}
+
 /**
 * remove spaces (in-place) from string bytes (UTF-8 or ASCII) containing
 * "howmany"
