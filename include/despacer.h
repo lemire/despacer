@@ -789,10 +789,10 @@ size_t despace_avx2_vpermd( void* dst_void, void* src_void, size_t length )
 		0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00
 	);
 
-	const __m256i mask_index = _mm256_set1_epi64x( 0x80A0908884828180 );
-	const __m256i mask_shift = _mm256_set1_epi64x( 0x0000000008080808 );
-	const __m256i mask_invert = _mm256_set1_epi64x( 0x0020100800000000 );
-	const __m256i mask_fixup = _mm256_set_epi32(
+	const __m256i permutation_mask = _mm256_set1_epi64x( 0x0020100884828180 );
+	const __m256i invert_mask = _mm256_set1_epi64x( 0x0020100880808080 ); 
+	const __m256i zero = _mm256_setzero_si256();
+	const __m256i fixup = _mm256_set_epi32(
 		0x08080808, 0x0F0F0F0F, 0x00000000, 0x07070707,
 		0x08080808, 0x0F0F0F0F, 0x00000000, 0x07070707
 	);
@@ -807,39 +807,69 @@ size_t despace_avx2_vpermd( void* dst_void, void* src_void, size_t length )
 		0x07060504  // 0x00'000000, 0x'07060504
 	);
 
-	for( ; length >= 32; length-=32 ){
+	// hi bits are ignored by pshufb, used to reject movement of low qword bytes
+	const __m256i shuffle_a = _mm256_set_epi8(
+		0x7F, 0x7E, 0x7D, 0x7C, 0x7B, 0x7A, 0x79, 0x78, 0x07, 0x16, 0x25, 0x34, 0x43, 0x52, 0x61, 0x70,
+		0x7F, 0x7E, 0x7D, 0x7C, 0x7B, 0x7A, 0x79, 0x78, 0x07, 0x16, 0x25, 0x34, 0x43, 0x52, 0x61, 0x70
+	);
+
+	// broadcast 0x08 then blendd...
+	const __m256i shuffle_b = _mm256_set_epi32(
+		0x08080808, 0x08080808, 0x00000000, 0x00000000,
+		0x08080808, 0x08080808, 0x00000000, 0x00000000
+	);
+
+	for( uint8_t* end = &src[(length & ~31)]; src != end; src += 32){
 		__m256i r0,r1,r2,r3,r4;
+		unsigned int s0,s1;
 
 		r0 = _mm256_loadu_si256((__m256i *)src); // asrc
-		src += 32;
 
 		r1 = _mm256_adds_epu8(mask_70, r0);
 		r2 = _mm256_cmpeq_epi8(mask_20, r0);
+
 		r1 = _mm256_shuffle_epi8(lut_cntrl, r1);
+
 		r1 = _mm256_or_si256(r1, r2); // bytemask of spaces
 
-		r2 = _mm256_andnot_si256(r1, mask_index);
-		r1 = _mm256_and_si256(r1, mask_shift);
-		r2 = _mm256_sad_epu8(r2, mask_invert); // bitmap[0:5], popcnt[7:15]
-		r1 = _mm256_sad_epu8(r1, _mm256_setzero_si256()); // shift amount
-		r3 = _mm256_slli_epi64(r2, 29); // move hi index to 2nd dword
-		r4 = _mm256_srli_epi64(r2, 7); // popcnt
-		r2 = _mm256_or_si256(r2, r3);
-		r2 = _mm256_permutevar8x32_epi32(lut, r2);
-		r2 = _mm256_xor_si256(r2, mask_fixup);
-		r2 = _mm256_srlv_epi64(r2, r1);
-		r0 = _mm256_shuffle_epi8(r0, r2);
+		r2 = _mm256_sad_epu8(zero, r1);
+		s0 = _mm256_movemask_epi8(r1);
+		r1 = _mm256_andnot_si256(r1, permutation_mask);
 
-		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 0);
-		dst += _mm256_extract_epi64(r4, 0);
-		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 1);
-		dst += _mm256_extract_epi64(r4, 1);
-		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 2);
-		dst += _mm256_extract_epi64(r4, 2);
-		*((uint64_t*)dst) = _mm256_extract_epi64(r0, 3);
-		dst += _mm256_extract_epi64(r4, 3);
+		r1 = _mm256_sad_epu8(r1, invert_mask); // index_bitmap[0:5], low32_spaces_count[7:15]
+
+		r2 = _mm256_shuffle_epi8(r2, zero);
+
+		r2 = _mm256_sub_epi8(shuffle_a, r2); // add space cnt of low qword
+		s0 = ~s0;
+
+		r3 = _mm256_slli_epi64(r1, 29); // move top part of index_bitmap to high dword
+		r4 = _mm256_srli_epi64(r1, 7); // number of spaces in low dword 
+
+		r4 = _mm256_shuffle_epi8(r4, shuffle_b);
+		r1 = _mm256_or_si256(r1, r3);
+
+		r1 = _mm256_permutevar8x32_epi32(lut, r1);
+		s1 = _mm_popcnt_u32(s0);
+		r4 = _mm256_add_epi8(r4, shuffle_a);
+		s0 = s0 & 0xFFFF; // isolate low oword
+
+		r2 = _mm256_shuffle_epi8(r4, r2);
+		s0 = _mm_popcnt_u32(s0);
+
+		r2 = _mm256_max_epu8(r2, r4); // pin low qword bytes
+
+		r1 = _mm256_xor_si256(r1, fixup);
+
+		r1 = _mm256_shuffle_epi8(r1, r2); // complete shuffle mask
+
+		r0 = _mm256_shuffle_epi8(r0, r1); // despace!
+
+		_mm_storeu_si128((__m128i*)dst, _mm256_castsi256_si128(r0));
+		_mm_storeu_si128((__m128i*)&dst[s0], _mm256_extracti128_si256(r0,1));
+		dst += s1;
 	}
-	dst += despace_branchless(dst, src, length);
+	dst += despace_branchless(dst, src, length & 31);
 	return (size_t)(dst - ((uint8_t*)dst_void));
 }
 
