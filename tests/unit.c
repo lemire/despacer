@@ -76,17 +76,30 @@ int main() {
   printf("testing ");
 
 #ifdef __SSSE3__
-  gen_table_1mb();
+  gen_table_512kb();
 #endif
   size_t repeat = 1000;
   for(size_t i = 0; i < repeat; i++) {
     printf(".");
+    int N;
+    char *buffer;
+    size_t howmanynonwhite;
+
     fflush(NULL);
-    const int N = rand() % 1000000;
-    char *buffer = malloc(N);
+    if(i < 128) {
+      // we try to put a white space in a unique position.
+      N = 128;
+      buffer = malloc(N);
+      for(int j = 0; j < N; j++) buffer[j] = 'c';
+      buffer[i] = ' ';
+      howmanynonwhite = N - 1;
+    } else {
+      N = rand() % 1000000;
+      buffer = malloc(N);
+      howmanynonwhite = N - fillwithtext(buffer, N);
+    }
     char *solution = malloc(N);
     char *tmp = malloc(N);
-    size_t howmanynonwhite = N - fillwithtext(buffer, N);
     memcpy(solution,buffer,N);
     despace(solution,N);
     memcpy(tmp,buffer,N);
@@ -123,7 +136,7 @@ int main() {
     memcpy(tmp,buffer,N);
     DESPACE_CHECK_SD(despace_ssse3_lut_1kb,N,tmp,solution,howmanynonwhite);
     memcpy(tmp,buffer,N);
-    DESPACE_CHECK_SD(despace_ssse3_lut_1mb,N,tmp,solution,howmanynonwhite);
+    DESPACE_CHECK_SD(despace_ssse3_lut_512kb,N,tmp,solution,howmanynonwhite);
 #endif
 #ifdef __SSE4_1__
     memcpy(tmp,buffer,N);

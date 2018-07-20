@@ -97,7 +97,7 @@ size_t fillwithtext(char *buffer, size_t size) {
 
 int main(int argc, char **argv) {
 #ifdef __SSSE3__
-  gen_table_1mb();
+  gen_table_512kb();
 #endif
   const int N = 1024;
   int alignoffset = 0;
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(despace_ssse3_lut_1kb(tmpbuffer, buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
-  BEST_TIME_CHECK(despace_ssse3_lut_1mb(tmpbuffer, buffer, N), N - howmanywhite,
+  BEST_TIME_CHECK(despace_ssse3_lut_512kb(tmpbuffer, buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
 #ifdef __AVX2__
