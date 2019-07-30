@@ -560,11 +560,7 @@ size_t despace_ssse3_lut_1kb( void* dst_void, void* src_void, size_t length )
 		0x0605040302070100, 0x0605040302000701, 0x0605040302010700, 0x0605040302010007};
 
 	const __m128i mask_01 = _mm_abs_epi8(_mm_cmpeq_epi8(_mm_setzero_si128(),_mm_setzero_si128()));
-	const __m128i mask_20 = _mm_slli_epi64(mask_01, 5);
-	const __m128i mask_70 = _mm_set1_epi8( 0x70 );
-	const __m128i lut_cntrl = _mm_setr_epi8(
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00);
+	const __m128i lut_cntrl = _mm_setr_epi8(' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n', 0, 0, '\r', 0, 0);
 
 	for( ; length >= 16; length-=16 ){
 		// load
@@ -572,8 +568,8 @@ size_t despace_ssse3_lut_1kb( void* dst_void, void* src_void, size_t length )
 		__m128i vector1 = _mm_unpackhi_epi64(vector0, vector0);
 
 		// detect spaces
-		__m128i bytemask0 = _mm_or_si128(_mm_cmpeq_epi8(mask_20, vector0),
-			_mm_shuffle_epi8(lut_cntrl, _mm_adds_epu8(mask_70, vector0)));
+		__m128i clone = _mm_shuffle_epi8(lut_cntrl, vector0);
+		__m128i bytemask0 = _mm_cmpeq_epi8(clone, vector0);
 
 		// sort (compress)
 		uint32_t bitmask0 = _mm_movemask_epi8(bytemask0);
