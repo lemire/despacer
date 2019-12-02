@@ -171,6 +171,10 @@ int main(int argc, char **argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_branchless_u4(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(sse4_despace_skinny_u2(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(sse4_despace_skinny_u4(buffer, N), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse4_despace_trail(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif

@@ -149,6 +149,10 @@ int main() {
     DESPACE_CHECK(sse4_despace_branchless_u2,N,tmp,solution,howmanynonwhite);
     memcpy(tmp,buffer,N);
     DESPACE_CHECK(sse4_despace_branchless_u4,N,tmp,solution,howmanynonwhite);
+    memcpy(tmp,buffer,N);
+    DESPACE_CHECK(sse4_despace_skinny_u2,N,tmp,solution,howmanynonwhite);
+    memcpy(tmp,buffer,N);
+    DESPACE_CHECK(sse4_despace_skinny_u4,N,tmp,solution,howmanynonwhite);
 #endif
 #ifdef __SSE4_2__
     memcpy(tmp,buffer,N);
