@@ -500,6 +500,7 @@ static uint64_t thintable_epi8[256]={
 };
 
 // unlike cleanm128, we just eliminate everything that is < 0x20
+// credit: Anime Tosho
 static inline __m128i skinnycleanm128(__m128i x, int *mask16) {
   __m128i constant = _mm_set1_epi8((char)(0xFF - 0x21));
   __m128i satadd = _mm_adds_epu8(x,constant);// anything >=0x21 will sum to 0xFF, rest is just under
