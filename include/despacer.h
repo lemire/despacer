@@ -114,6 +114,7 @@ static inline size_t despace32(char *bytes, size_t howmany) {
   }
   return pos;
 }
+
 static inline size_t faster_despace(char *bytes, size_t howmany) {
   size_t i = 0, pos = 0;
   while (i < howmany) {
@@ -123,6 +124,7 @@ static inline size_t faster_despace(char *bytes, size_t howmany) {
   }
   return pos;
 }
+
 static inline size_t faster_despace32(char *bytes, size_t howmany) {
   size_t i = 0, pos = 0;
   while (i < howmany) {
@@ -152,6 +154,7 @@ static inline size_t countspaces32(const char *bytes, size_t howmany) {
   }
   return count;
 }
+
 // standard bit twiddling
 #define haszero(v)                                                             \
   (((v)-UINT64_C(0x0101010101010101)) & ~(v)&UINT64_C(0x8080808080808080))

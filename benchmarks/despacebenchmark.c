@@ -31,7 +31,7 @@
 
 #define BEST_TIME_NOCHECK(test, pre, repeat, number)                           \
   do {                                                                         \
-    printf("%s: ", #test);                                                     \
+    printf("%-50s: ", #test);                                                     \
     fflush(NULL);                                                              \
     uint64_t tm1, tm2;                                                         \
     uint64_t min_diff = (uint64_t)-1;                                          \
@@ -52,7 +52,7 @@
 
 #define BEST_TIME_CHECK(test, check, pre, repeat, number)                      \
   do {                                                                         \
-    printf("%s: ", #test);                                                     \
+    printf("%-50s: ", #test);                                                     \
     fflush(NULL);                                                              \
     uint64_t tm1, tm2;                                                         \
     uint64_t min_diff = (uint64_t)-1;                                          \
