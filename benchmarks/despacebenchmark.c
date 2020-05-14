@@ -1,10 +1,18 @@
+#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <time.h>    // for clock_t, clock()
 #include <sys/time.h>
 #include <string.h>
 #include "despacer.h"
+struct timespec start; 
+struct timespec end;
 
+double timespent() {
+  return (end.tv_sec - start.tv_sec) +
+                        (end.tv_nsec - start.tv_nsec) ;
+}
 #define RDTSC_START(cycles)                                                    \
   do {                                                                         \
     register unsigned cyc_high, cyc_low;                                       \
@@ -55,19 +63,21 @@
     printf("%-50s: ", #test);                                                     \
     fflush(NULL);                                                              \
     uint64_t tm1, tm2;                                                         \
-    uint64_t min_diff = (uint64_t)-1;                                          \
+    uint64_t min_diff = (uint64_t)-1;double t=1e200;                     \
     for (int i = 0; i < repeat; i++) {                                         \
       pre;                                                                     \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      RDTSC_START(tm1);                                                        \
+      clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                                                        \
       if (test != check)                                                       \
         printf("bug");                                                         \
-      RDTSC_FINAL(tm2);                                                        \
+      clock_gettime(CLOCK_REALTIME, &end);RDTSC_FINAL(tm2);                                                        \
       uint64_t tmus = tm2 - tm1;                                               \
+      double ts = timespent(); \
       if (tmus < min_diff)                                                     \
         min_diff = tmus;                                                       \
+      if(ts < t) t = ts;\
     }                                                                          \
-    printf(" %f cycles / ops", min_diff * 1.0 / number);                       \
+    printf(" %f cycles / ops, %f GB/s", min_diff * 1.0 / number, number/t);    \
     printf("\n");                                                              \
     fflush(NULL);                                                              \
   } while (0)
