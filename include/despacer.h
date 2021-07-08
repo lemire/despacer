@@ -27,7 +27,7 @@ int jump_table[256] = {
 * this function does add the null character, you have to do it yourself if you
 * need it.
 */
-static inline size_t despace(char *bytes, size_t howmany) {
+inline size_t despace(char *bytes, size_t howmany) {
   size_t pos = 0;
   for (size_t i = 0; i < howmany; i++) {
     char c = bytes[i];
@@ -103,7 +103,7 @@ size_t despace_table( void* dst_void, void* src_void, size_t length )
 	return (size_t)(dst - ((uint8_t*)dst_void));
 }
 
-static inline size_t despace32(char *bytes, size_t howmany) {
+inline size_t despace32(char *bytes, size_t howmany) {
   size_t pos = 0;
   for (size_t i = 0; i < howmany; i++) {
     char c = bytes[i];
@@ -115,7 +115,7 @@ static inline size_t despace32(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t faster_despace(char *bytes, size_t howmany) {
+inline size_t faster_despace(char *bytes, size_t howmany) {
   size_t i = 0, pos = 0;
   while (i < howmany) {
     const char c = bytes[i++];
@@ -125,7 +125,7 @@ static inline size_t faster_despace(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t faster_despace32(char *bytes, size_t howmany) {
+inline size_t faster_despace32(char *bytes, size_t howmany) {
   size_t i = 0, pos = 0;
   while (i < howmany) {
     const char c = bytes[i++];
@@ -135,7 +135,7 @@ static inline size_t faster_despace32(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t countspaces(const char *bytes, size_t howmany) {
+inline size_t countspaces(const char *bytes, size_t howmany) {
   size_t count = 0;
   for (size_t i = 0; i < howmany; i++) {
     char c = bytes[i];
@@ -146,7 +146,7 @@ static inline size_t countspaces(const char *bytes, size_t howmany) {
   return count;
 }
 
-static inline size_t countspaces32(const char *bytes, size_t howmany) {
+inline size_t countspaces32(const char *bytes, size_t howmany) {
   size_t count = 0;
   for (size_t i = 0; i < howmany; i++) {
     const char c = bytes[i];
@@ -159,7 +159,7 @@ static inline size_t countspaces32(const char *bytes, size_t howmany) {
 #define haszero(v)                                                             \
   (((v)-UINT64_C(0x0101010101010101)) & ~(v)&UINT64_C(0x8080808080808080))
 
-static inline size_t despace64(char *bytes, size_t howmany) {
+inline size_t despace64(char *bytes, size_t howmany) {
   size_t pos = 0;
   size_t i = 0;
   uint64_t word = 0;
@@ -207,7 +207,7 @@ static inline size_t despace64(char *bytes, size_t howmany) {
 * Result is stored in "out", where the caller is responsible for memory
 * allocation.
 */
-static inline size_t despace_to(const char *__restrict__ bytes, size_t howmany,
+inline size_t despace_to(const char *__restrict__ bytes, size_t howmany,
                                 char *__restrict__ out) {
   size_t pos = 0;
   for (size_t i = 0; i < howmany; i++) {
@@ -232,7 +232,7 @@ static inline size_t despace_to(const char *__restrict__ bytes, size_t howmany,
 * this function does add the null character, you have to do it yourself if you
 * need it.
 */
-static inline size_t sse4_despace(char *bytes, size_t howmany) {
+inline size_t sse4_despace(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   __m128i newline = _mm_set1_epi8('\n');
@@ -266,7 +266,7 @@ static inline size_t sse4_despace(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t sse4_despace_branchless(char *bytes, size_t howmany) {
+inline size_t sse4_despace_branchless(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   __m128i newline = _mm_set1_epi8('\n');
@@ -293,7 +293,7 @@ static inline size_t sse4_despace_branchless(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t sse4_despace_branchless32(char *bytes, size_t howmany) {
+inline size_t sse4_despace_branchless32(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   size_t i = 0;
@@ -314,7 +314,7 @@ static inline size_t sse4_despace_branchless32(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline __m128i cleanm128(__m128i x, __m128i spaces, __m128i newline,
+inline __m128i cleanm128(__m128i x, __m128i spaces, __m128i newline,
                                 __m128i carriage, int *mask16) {
   __m128i xspaces = _mm_cmpeq_epi8(x, spaces);
   __m128i xnewline = _mm_cmpeq_epi8(x, newline);
@@ -326,7 +326,7 @@ static inline __m128i cleanm128(__m128i x, __m128i spaces, __m128i newline,
 }
 
 
-static inline size_t sse4_despace_branchless_u4(char *bytes, size_t howmany) {
+inline size_t sse4_despace_branchless_u4(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   __m128i newline = _mm_set1_epi8('\n');
@@ -372,7 +372,7 @@ static inline size_t sse4_despace_branchless_u4(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t sse4_despace_branchless_u2(char *bytes, size_t howmany) {
+inline size_t sse4_despace_branchless_u2(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   __m128i newline = _mm_set1_epi8('\n');
@@ -408,7 +408,7 @@ static inline size_t sse4_despace_branchless_u2(char *bytes, size_t howmany) {
 }
 
 // table modified and copied from http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetTable
-static const unsigned char BitsSetTable256mul2[256] = 
+static const unsigned char BitsSetTable256mul2[256] =
 {
 #   define B2(n) (n)*2,     (n)*2+2,     (n)*2+2,     (n)*2+4
 #   define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
@@ -501,7 +501,7 @@ static uint64_t thintable_epi8[256]={
 
 // unlike cleanm128, we just eliminate everything that is < 0x20
 // credit: Anime Tosho
-static inline __m128i skinnycleanm128(__m128i x, int *mask16) {
+inline __m128i skinnycleanm128(__m128i x, int *mask16) {
   __m128i constant = _mm_set1_epi8((char)(0xFF - 0x21));
   __m128i satadd = _mm_adds_epu8(x,constant);// anything >=0x21 will sum to 0xFF, rest is just under
   __m128i ones = _mm_set1_epi8(1);
@@ -524,7 +524,7 @@ static inline __m128i skinnycleanm128(__m128i x, int *mask16) {
 }
 
 
-static inline size_t sse4_despace_skinny_u4(char *bytes, size_t howmany) {
+inline size_t sse4_despace_skinny_u4(char *bytes, size_t howmany) {
   size_t pos = 0;
   size_t i = 0;
   for (; i + 64 - 1 < howmany; i += 64) {
@@ -568,7 +568,7 @@ static inline size_t sse4_despace_skinny_u4(char *bytes, size_t howmany) {
 }
 
 
-static inline size_t sse4_despace_skinny_u2(char *bytes, size_t howmany) {
+inline size_t sse4_despace_skinny_u2(char *bytes, size_t howmany) {
   size_t pos = 0;
   size_t i = 0;
   for (; i + 32 - 1 < howmany; i += 32) {
@@ -610,7 +610,7 @@ static inline size_t sse4_despace_skinny_u2(char *bytes, size_t howmany) {
 * this function does add the null character, you have to do it yourself if you
 * need it.
 */
-static inline size_t sse4_despace_trail(char *bytes, size_t howmany) {
+inline size_t sse4_despace_trail(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   __m128i newline = _mm_set1_epi8('\n');
@@ -835,7 +835,7 @@ size_t despace_ssse3_lut_512kb( void* dst_void, void* src_void, size_t length )
 
 #include <x86intrin.h>
 
-static inline size_t sse42_despace_to(const char *__restrict__ bytes,
+inline size_t sse42_despace_to(const char *__restrict__ bytes,
                                       size_t howmany, char *__restrict__ out) {
   size_t pos = 0;
   __m128i targetchars =
@@ -861,7 +861,7 @@ static inline size_t sse42_despace_to(const char *__restrict__ bytes,
   return pos;
 }
 
-static inline size_t sse42_despace(char *bytes, size_t howmany) {
+inline size_t sse42_despace(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i targetchars =
       _mm_set_epi8(' ', '\n', '\r', ' ', ' ', '\n', '\r', ' ', ' ', '\n', '\r',
@@ -892,7 +892,7 @@ static inline size_t sse42_despace(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t sse42_despace_branchless(char *bytes, size_t howmany) {
+inline size_t sse42_despace_branchless(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i targetchars =
       _mm_set_epi8(' ', '\n', '\r', ' ', ' ', '\n', '\r', ' ', ' ', '\n', '\r',
@@ -918,7 +918,7 @@ static inline size_t sse42_despace_branchless(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t sse42_despace_branchless_lookup(char *bytes,
+inline size_t sse42_despace_branchless_lookup(char *bytes,
                                                      size_t howmany) {
   size_t pos = 0;
   __m128i targetchars =
@@ -951,13 +951,13 @@ static inline size_t sse42_despace_branchless_lookup(char *bytes,
 #include <x86intrin.h>
 
 #ifndef __clang__
-static inline __m256i _mm256_loadu2_m128i(__m128i const *__addr_hi,
+inline __m256i _mm256_loadu2_m128i(__m128i const *__addr_hi,
                                           __m128i const *__addr_lo) {
   __m256i __v256 = _mm256_castsi128_si256(_mm_loadu_si128(__addr_lo));
   return _mm256_insertf128_si256(__v256, _mm_loadu_si128(__addr_hi), 1);
 }
 
-static inline void _mm256_storeu2_m128i(__m128i *__addr_hi, __m128i *__addr_lo,
+inline void _mm256_storeu2_m128i(__m128i *__addr_hi, __m128i *__addr_lo,
                                         __m256i __a) {
   __m128i __v128;
 
@@ -1046,7 +1046,7 @@ size_t despace_avx2_vpermd( void* dst_void, void* src_void, size_t length )
 * this function does add the null character, you have to do it yourself if you
 * need it.
 */
-static inline size_t avx2_despace(char *bytes, size_t howmany) {
+inline size_t avx2_despace(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m256i spaces = _mm256_set1_epi8(' ');
   __m256i newline = _mm256_set1_epi8('\n');
@@ -1084,7 +1084,7 @@ static inline size_t avx2_despace(char *bytes, size_t howmany) {
   return pos;
 }
 
-static inline size_t avx2_countspaces(const char *bytes, size_t howmany) {
+inline size_t avx2_countspaces(const char *bytes, size_t howmany) {
   size_t count = 0;
   __m256i spaces = _mm256_set1_epi8(' ');
   __m256i newline = _mm256_set1_epi8('\n');
@@ -1109,7 +1109,7 @@ static inline size_t avx2_countspaces(const char *bytes, size_t howmany) {
   return count;
 }
 
-static inline __m256i cleanm256(__m256i x, __m256i spaces, __m256i newline,
+inline __m256i cleanm256(__m256i x, __m256i spaces, __m256i newline,
                                 __m256i carriage, unsigned int *mask1,
                                 unsigned int *mask2) {
   __m256i xspaces = _mm256_cmpeq_epi8(x, spaces);
@@ -1129,7 +1129,7 @@ static inline __m256i cleanm256(__m256i x, __m256i spaces, __m256i newline,
   return _mm256_shuffle_epi8(x, mask);
 }
 
-static inline size_t avx2_despace_branchless(char *bytes, size_t howmany) {
+inline size_t avx2_despace_branchless(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   __m128i newline = _mm_set1_epi8('\n');
@@ -1166,7 +1166,7 @@ static inline size_t avx2_despace_branchless(char *bytes, size_t howmany) {
   }
   return pos;
 }
-static inline size_t avx2_despace_branchless_u2(char *bytes, size_t howmany) {
+inline size_t avx2_despace_branchless_u2(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m128i spaces = _mm_set1_epi8(' ');
   __m128i newline = _mm_set1_epi8('\n');
