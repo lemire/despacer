@@ -1,7 +1,7 @@
 # despacer
 [![Build Status](https://travis-ci.org/lemire/despacer.png)](https://travis-ci.org/lemire/despacer)
 
-Fast C library to remove white space from strings (also called "strip white space")
+Fast C library to remove white space from strings (also called "strip white space"). It is header-only: just drop the headers in your project.
 
 We want to remove the space (' ') and the line feeds characters ('\n', '\r') from a string
 as fast as possible. To avoid unnecessary allocations, we wish to do the processing in-place.
