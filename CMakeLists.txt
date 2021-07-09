@@ -6,7 +6,7 @@ project(despacer VERSION "0.1.0" LANGUAGES C)
 set(CMAKE_STATIC_LIBRARY_PREFIX_C "")
 
 # despacer.lib
-add_library(despacer STATIC "./src/lib.c")
+add_library(despacer STATIC "./src/despacer.c")
 target_include_directories(despacer INTERFACE "./include")
 set_target_properties(despacer PROPERTIES POSITION_INDEPENDENT_CODE ON) #-fPIC
 
