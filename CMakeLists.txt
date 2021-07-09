@@ -7,8 +7,12 @@ set(CMAKE_STATIC_LIBRARY_PREFIX_C "")
 
 # despacer.lib
 add_library(despacer STATIC "./src/despacer.c")
-target_include_directories(despacer INTERFACE "./include")
+target_include_directories(despacer PRIVATE "./include")
 set_target_properties(despacer PROPERTIES POSITION_INDEPENDENT_CODE ON) #-fPIC
+target_compile_features(despacer PRIVATE "c_std_99")
 
-# std
-set_target_properties(despacer PROPERTIES C_STANDARD 99)
+if(MSVC)
+    target_compile_options(despacer PRIVATE /arch:native)
+else()
+    target_compile_options(despacer PRIVATE -march=native)
+endif()
