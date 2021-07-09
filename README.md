@@ -13,14 +13,13 @@ Let us consider any array of bytes representing a string in one of these encodin
 
 How fast can we go?
 
-Blog post: 
+Blog post:
 http://lemire.me/blog/2017/01/20/how-quickly-can-you-remove-spaces-from-a-string/
 
 
-Usage:
+Build:
 ```
-make
-./despacebenchmark
+make build
 ```
 
 Note that clang seems to give better results than gcc.
@@ -28,7 +27,7 @@ Note that clang seems to give better results than gcc.
 Possible results...
 
 ```
-$ ./despacebenchmark
+$ make benchmark
 pointer alignment = 16 bytes
 memcpy(tmpbuffer,buffer,N):  0.111328 cycles / ops
 countspaces(buffer, N):  3.687500 cycles / ops

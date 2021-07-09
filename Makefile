@@ -1,17 +1,22 @@
-# minimalist makefile
-.SUFFIXES:
-#
-.SUFFIXES: .cpp .o .c .h
-ifeq ($(DEBUG),1)
-CFLAGS = -fPIC  -std=c99 -ggdb -march=native -Wall -Wextra -Wshadow -fsanitize=undefined  -fno-omit-frame-pointer -fsanitize=address
+all: build unit benchmark
+
+build: ./src ./include
+ifeq ($(OS), Windows_NT)
+	# build fails with MSVC generator
+	cmake -G Ninja -S ./ -B ./build && cmake --build ./build --config Release
 else
-CFLAGS = -fPIC -std=c99 -O3  -march=native -Wall -Wextra -Wshadow
-endif # debug
-all: despacebenchmark unit
-HEADERS=./include/despacer.h ./include/despacer_tables.h
-unit: ./tests/unit.c $(HEADERS)
-	$(CC) $(CFLAGS) -o unit ./tests/unit.c -Iinclude
-despacebenchmark: ./benchmarks/despacebenchmark.c $(HEADERS)
-	$(CC) $(CFLAGS) -o despacebenchmark ./benchmarks/despacebenchmark.c -Iinclude
-clean:
-	rm -f despacebenchmark unit 
+	cmake -S ./ -B ./build && cmake --build ./build --config Release
+endif
+
+unit: ./tests
+	cd build && ctest unit
+
+benchmark: ./benchmarks
+	./build/despacer_benchmark
+
+clean: ./build
+ifeq ($(OS), Windows_NT)
+	cmd /c 'rmdir /s /q build'
+else
+	rm -rf ./build
+endif
