@@ -3,10 +3,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>    // for clock_t, clock()
-#include <sys/time.h>
+#include "./clock_gettime.h"
+#include <stdint.h>
 #include <string.h>
 #include "despacer.h"
-struct timespec start; 
+struct timespec start;
 struct timespec end;
 
 double timespent() {
