@@ -12,8 +12,11 @@ importPaths "./src/"
 
 libs "../../build/despacer" platform="windows"
 lflags "../../build/despacer.a" platform="posix"
+libs "msvcrt" platform="windows"
+lflags "/NODEFAULTLIB:libcmt" "/NODEFAULTLIB:msvcrtd" platform="windows-dmd"
+dflags "--link-internally" platform="windows-ldc"
 
 preBuildCommands "cd ../../ && cmake -G Ninja -S ./ -B ./build && cmake --build ./build --config Release" platform="windows"
 preBuildCommands "cd ../../ && cmake -S ./ -B ./build && cmake --build ./build --config Release" platform="posix"
 
-extraDependencyFiles "../../CMakeLists.txt" "../../include/" "../../src/"
+extraDependencyFiles "../../CMakeLists.txt" "../../include/**/*" "../../src/**/*"
