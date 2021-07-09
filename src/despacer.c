@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <assert.h>
 
 #include "./despacer_tables.h"
 

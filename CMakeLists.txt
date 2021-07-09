@@ -16,3 +16,13 @@ if(MSVC)
 else()
     target_compile_options(despacer PRIVATE -march=native)
 endif()
+
+# despacer_unit.exe
+option(UNIT_TESTS "Enable Unit tests" ON)
+if(UNIT_TESTS)
+    enable_testing()
+    add_executable(despacer_unit "./tests/unit.c")
+    target_include_directories(despacer_unit PRIVATE "./include")
+    target_link_libraries(despacer_unit PRIVATE despacer)
+    add_test(NAME unit COMMAND despacer_unit)
+endif()
