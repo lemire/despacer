@@ -75,6 +75,7 @@ struct dpp
 
 extern (C)
 {
+  void gen_table_512kb() @nogc nothrow;
   ulong despace_ssse3_lut_512kb(void*, void*, ulong) @nogc nothrow;
   ulong despace_ssse3_lut_1kb(void*, void*, ulong) @nogc nothrow;
   ulong despace_ssse3_cumsum(void*, void*, ulong) @nogc nothrow;
