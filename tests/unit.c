@@ -76,7 +76,7 @@ int main() {
 #ifdef __SSSE3__
   gen_table_512kb();
 #endif
-  size_t repeat = 1000;
+  size_t repeat = 128;
   for(size_t i = 0; i < repeat; i++) {
     printf(".");
     int N;

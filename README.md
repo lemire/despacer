@@ -1,7 +1,7 @@
 # despacer
 [![CI](https://github.com/lemire/despacer/actions/workflows/CI.yml/badge.svg)](https://github.com/lemire/despacer/actions/workflows/CI.yml)
 
-Fast C library to remove white space from strings (also called "strip white space"). It is header-only: just drop the headers in your project.
+Fast C library to remove white space from strings (also called "strip white space").
 
 We want to remove the space (' ') and the line feeds characters ('\n', '\r') from a string
 as fast as possible. To avoid unnecessary allocations, we wish to do the processing in-place.
@@ -19,13 +19,19 @@ http://lemire.me/blog/2017/01/20/how-quickly-can-you-remove-spaces-from-a-string
 
 ### Build:
 
+Make sure you have a recent cmake (3.15 or better):
+
 ```
-make build
+cmake -B build && cmake --build build
 ```
 
-Using the above, CMake includes the `include` directory, and builds the library's entry file `./src/despacer.c`.
+You may run tests by entering the  `build` repository and typing `ctest`.
 
-By default it also builds the tests and benchmarks
+Visual Studio users may further want to specify the build configuration (Release/Debug).
+
+Using the above,uilds the library, tests and benchmarking tool. The benchmark tool
+requires GCC/clang under x64 (it is otherwise omitted).
+
 
 
 ### D Bindings
