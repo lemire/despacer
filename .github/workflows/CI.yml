@@ -1,0 +1,83 @@
+name: CI
+on:
+  push:
+
+jobs:
+  Test:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        clang:
+          - 12
+        CC:
+          - clang
+        CXX:
+          - clang++
+        cmake:
+          - 3.20.2
+        ninja:
+          - 1.10.2
+        d:
+          - "ldc-beta"
+          - "dmd-latest"
+    env:
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+    steps:
+      - uses: actions/checkout@v2
+
+      # Cache
+      - name: Cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.dub
+            ~/AppData/Local/dub
+            ./llvm
+            C:/Program Files/LLVM
+          key: "cache--OS:${{ matrix.os }}-Clang:${{ matrix.clang }}-D:${{ matrix.d }}"
+
+      # Setup compilers and tools
+
+      - name: Setup LLVM
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: ${{ matrix.clang }}
+          cached: ${{ steps.cache.outputs.cache-hit }}
+
+      - name: Setup Cmake and Ninja
+        uses: aminya/install-cmake@new-versions-and-arch
+        with:
+          cmake: ${{ matrix.cmake }}
+          ninja: ${{ matrix.ninja }}
+
+      # Build and Test
+
+      - name: Build
+        run: make build
+
+      - name: Test
+        run: make unit
+
+      - name: Benchmarks
+        run: make benchmark
+
+      # Bindings tests
+      - name: Setup D
+        uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ${{ matrix.d }}
+
+      - name: Build and Test D Binings
+        continue-on-error: ${{ contains(matrix.os, 'macos') }}
+        run: |
+          dub build
+          dub test
+        working-directory: ${{ github.workspace }}/bindings/d

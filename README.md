@@ -1,5 +1,5 @@
 # despacer
-[![Build Status](https://travis-ci.org/lemire/despacer.png)](https://travis-ci.org/lemire/despacer)
+[![CI](https://github.com/lemire/despacer/actions/workflows/CI.yml/badge.svg)](https://github.com/lemire/despacer/actions/workflows/CI.yml)
 
 Fast C library to remove white space from strings (also called "strip white space"). It is header-only: just drop the headers in your project.
 
@@ -13,22 +13,37 @@ Let us consider any array of bytes representing a string in one of these encodin
 
 How fast can we go?
 
-Blog post: 
+Blog post:
 http://lemire.me/blog/2017/01/20/how-quickly-can-you-remove-spaces-from-a-string/
 
 
-Usage:
+### Build:
+
 ```
-make
-./despacebenchmark
+make build
 ```
+
+Using the above, CMake includes the `include` directory, and builds the library's entry file `./src/despacer.c`.
+
+By default it also builds the tests and benchmarks
+
+
+### D Bindings
+
+```
+cd ./bindings/d
+dub build --build=release
+```
+
+
+### Benchmarks
 
 Note that clang seems to give better results than gcc.
 
 Possible results...
 
 ```
-$ ./despacebenchmark
+$ make benchmark
 pointer alignment = 16 bytes
 memcpy(tmpbuffer,buffer,N):  0.111328 cycles / ops
 countspaces(buffer, N):  3.687500 cycles / ops
@@ -52,8 +67,6 @@ sse42_despace_to(buffer, N,tmpbuffer):  1.703125 cycles / ops
 
 This indicates how many cycles are used to despace one byte.
 
-
-
-# Related work
+### Related work
 
 - a related problem on ARM processors with iOS app https://github.com/DerekScottLedbetter/space-pruner

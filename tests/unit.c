@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <string.h>
 #include "despacer.h"
-
 
 
 // let us estimate that we have a high proba of hitting a white space
