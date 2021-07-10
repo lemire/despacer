@@ -16,6 +16,7 @@ libs "msvcrt" platform="windows"
 lflags "/NODEFAULTLIB:libcmt" "/NODEFAULTLIB:msvcrtd" platform="windows-dmd"
 dflags "--link-internally" platform="windows-ldc"
 
+// support SIMD
 dflags "-mcpu=native"
 
 preBuildCommands "cd ../../ && cmake -G Ninja -S ./ -B ./build && cmake --build ./build --config Release" platform="windows"
