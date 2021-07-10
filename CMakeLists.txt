@@ -11,10 +11,12 @@ target_include_directories(despacer PRIVATE "./include")
 set_target_properties(despacer PROPERTIES POSITION_INDEPENDENT_CODE ON) #-fPIC
 target_compile_features(despacer PRIVATE "c_std_99")
 
-if(MSVC)
+if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR  "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL AMD64)
+  if(MSVC)
     target_compile_options(despacer PRIVATE /arch:native)
-else()
+  else()
     target_compile_options(despacer PRIVATE -march=native)
+  endif()
 endif()
 
 # despacer_unit.exe
@@ -27,15 +29,6 @@ if(UNIT_TESTS)
     add_test(NAME unit COMMAND despacer_unit)
 endif()
 
-option(BENCHMARKS "Enable Benchmarks" ON)
-if(BENCHMARKS)
-    enable_testing()
-    add_executable(despacer_benchmark "./benchmarks/despacebenchmark.c")
-    target_include_directories(despacer_benchmark PRIVATE "./include")
-    target_link_libraries(despacer_benchmark PRIVATE despacer)
-    add_test(NAME benchmark COMMAND despacer_benchmark)
-    target_compile_features(despacer PRIVATE "c_std_11")
-endif()
 
 option(SANITIZER "Enable Sanitizer" OFF)
 option(CMAKE_SANITIZER "Sanitizer to use" "address")
@@ -43,3 +36,17 @@ if(SANITIZER)
   target_compile_options(despacer PRIVATE -fsanitize=${CMAKE_SANITIZER})
   target_link_options(despacer PRIVATE -fsanitize=${CMAKE_SANITIZER})
 endif()
+
+option(BENCHMARKS "Enable Benchmarks" ON)
+if(BENCHMARKS)
+    enable_testing()
+    if(("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL AMD64) AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GCC") )
+      add_executable(despacer_benchmark "./benchmarks/despacebenchmark.c")
+      target_include_directories(despacer_benchmark PRIVATE "include")
+      target_link_libraries(despacer_benchmark PRIVATE despacer)
+      add_test(NAME benchmark COMMAND despacer_benchmark)
+      target_compile_features(despacer PRIVATE "c_std_11")
+    endif()
+endif()
+
+
