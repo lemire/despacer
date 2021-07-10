@@ -29,7 +29,7 @@ You may run tests by entering the  `build` repository and typing `ctest`.
 
 Visual Studio users may further want to specify the build configuration (Release/Debug).
 
-Using the above,uilds the library, tests and benchmarking tool. The benchmark tool
+Using the above,cmake builds the library, tests and benchmarking tool. The benchmark tool
 requires GCC/clang under x64 (it is otherwise omitted).
 
 
