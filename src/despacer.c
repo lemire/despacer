@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <assert.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "./despacer_tables.h"
 
@@ -155,6 +156,17 @@ size_t countspaces32(const char *bytes, size_t howmany) {
     count += (c <= 32 ? 1 : 0);
   }
   return count;
+}
+
+// modified from countspaces
+bool hasspace(const char *bytes, size_t howmany) {
+	for (size_t i = 0; i < howmany; i++) {
+		char c = bytes[i];
+		if (c == '\r' || c == '\n' || c == ' ') {
+			return true;
+		}
+	}
+	return false;
 }
 
 // standard bit twiddling
@@ -1109,6 +1121,33 @@ size_t avx2_countspaces(const char *bytes, size_t howmany) {
     }
   }
   return count;
+}
+
+// modified from avx2_countspaces
+bool avx2_hasspace(const char *bytes, size_t howmany) {
+	__m256i spaces = _mm256_set1_epi8(' ');
+	__m256i newline = _mm256_set1_epi8('\n');
+	__m256i carriage = _mm256_set1_epi8('\r');
+	size_t i = 0;
+	for (; i + 31 < howmany; i += 32) {
+		__m256i x = _mm256_loadu_si256((const __m256i *)(bytes + i));
+		// we do it the naive way, could be smarter?
+		__m256i xspaces = _mm256_cmpeq_epi8(x, spaces);
+		__m256i xnewline = _mm256_cmpeq_epi8(x, newline);
+		__m256i xcarriage = _mm256_cmpeq_epi8(x, carriage);
+		__m256i anywhite =
+		_mm256_or_si256(_mm256_or_si256(xspaces, xnewline), xcarriage);
+		if(_mm_popcnt_u32(_mm256_movemask_epi8(anywhite)) != 0) {
+			return true;
+		}
+	}
+	for (; i < howmany; i++) {
+		char c = bytes[i];
+		if (c == '\r' || c == '\n' || c == ' ') {
+			return true;
+		}
+	}
+	return false;
 }
 
 __m256i cleanm256(__m256i x, __m256i spaces, __m256i newline,

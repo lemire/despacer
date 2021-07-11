@@ -77,6 +77,7 @@ extern (C)
 {
   ulong despace_to(const(char)*, ulong, char*) @nogc nothrow;
   ulong despace64(char*, ulong) @nogc nothrow;
+  bool hasspace(const(char)*, ulong) @nogc nothrow;
   ulong countspaces32(const(char)*, ulong) @nogc nothrow;
   ulong countspaces(const(char)*, ulong) @nogc nothrow;
   ulong faster_despace32(char*, ulong) @nogc nothrow;

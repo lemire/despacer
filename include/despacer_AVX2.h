@@ -1,6 +1,7 @@
 #ifdef __AVX2__
 
 #include <x86intrin.h>
+#include <stdbool.h>
 
 #ifndef __clang__
 
@@ -25,6 +26,9 @@ size_t despace_avx2_vpermd( void* dst_void, void* src_void, size_t length );
 size_t avx2_despace(char *bytes, size_t howmany);
 
 size_t avx2_countspaces(const char *bytes, size_t howmany);
+
+/** Check if the given bytes with length howmany have space among them */
+bool avx2_hasspace(const char *bytes, size_t howmany);
 
 __m256i cleanm256(__m256i x, __m256i spaces, __m256i newline, __m256i carriage, unsigned int *mask1, unsigned int *mask2);
 

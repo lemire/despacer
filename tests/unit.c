@@ -163,6 +163,17 @@ int main() {
   free(solution);
 
   }
+
+  if (!hasspace("has space", 9) || hasspace("nospace", 7)) {
+    return -1;
+  }
+
+  #ifdef __AVX2__
+  if (!avx2_hasspace("has space", 9) || avx2_hasspace("nospace", 7)) {
+    return -1;
+  }
+  #endif
+
   printf(" the code looks ok.\n");
   return 0;
 }
