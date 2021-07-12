@@ -78,6 +78,7 @@ extern (C)
   ulong despace_avx2_vpermd(void*, void*, ulong) @nogc nothrow;
   ulong avx2_despace(char*, ulong) @nogc nothrow;
   ulong avx2_countspaces(const(char)*, ulong) @nogc nothrow;
+  bool avx2_hasspace(const(char)*, ulong) @nogc nothrow;
   core.simd.long4 cleanm256(core.simd.long4, core.simd.long4, core.simd.long4, core.simd.long4, uint*, uint*) @nogc nothrow;
   ulong avx2_despace_branchless(char*, ulong) @nogc nothrow;
   ulong avx2_despace_branchless_u2(char*, ulong) @nogc nothrow;

@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 /**
 * remove spaces (in-place) from string bytes (UTF-8 or ASCII) containing
 * "howmany"
@@ -28,6 +30,9 @@ size_t faster_despace32 (char * bytes, size_t howmany);
 size_t countspaces (char const * bytes, size_t howmany);
 
 size_t countspaces32 (char const * bytes, size_t howmany);
+
+/** Check if the given bytes with length howmany have space among them */
+bool hasspace(const char *bytes, size_t howmany);
 
 size_t despace64 (char * bytes, size_t howmany);
 
