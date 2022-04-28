@@ -845,6 +845,59 @@ size_t despace_ssse3_lut_512kb( void* dst_void, void* src_void, size_t length )
 }
 #endif
 
+#ifdef __AVX512VBMI2__ 
+#include <x86intrin.h>
+size_t vbmi2_256_despace(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  __m256i spaces = _mm256_set1_epi8(' ');
+  __m256i newline = _mm256_set1_epi8('\n');
+  __m256i carriage = _mm256_set1_epi8('\r');
+  size_t i = 0;
+  for (; i + 31 < howmany; i += 32) {
+    __m256i x = _mm256_loadu_si256((const __m256i *)(bytes + i));
+    __mmask32  notspaces = _mm256_cmpneq_epi8_mask (x, spaces);
+    __mmask32  notnewline = _mm256_cmpneq_epi8_mask (x, newline);
+    __mmask32  notcarriage = _mm256_cmpneq_epi8_mask (x, carriage);
+    __mmask32  notwhite = notspaces & notnewline & notcarriage;
+    _mm256_mask_compressstoreu_epi16  (bytes + pos, notwhite, x);
+    pos += _popcnt32(notwhite);
+  }
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      continue;
+    }
+    bytes[pos++] = c;
+  }
+  return pos;
+}
+
+size_t vbmi2_despace(char *bytes, size_t howmany) {
+  size_t pos = 0;
+  __m512i spaces = _mm512_set1_epi8(' ');
+  __m512i newline = _mm512_set1_epi8('\n');
+  __m512i carriage = _mm512_set1_epi8('\r');
+  size_t i = 0;
+  for (; i + 63 < howmany; i += 64) {
+    __m512i x = _mm512_loadu_si512((const __m512i *)(bytes + i));
+    __mmask64  notspaces = _mm512_cmpneq_epi8_mask (x, spaces);
+    __mmask64  notnewline = _mm512_cmpneq_epi8_mask (x, newline);
+    __mmask64  notcarriage = _mm512_cmpneq_epi8_mask (x, carriage);
+    __mmask64  notwhite = notspaces & notnewline & notcarriage;
+    _mm512_mask_compressstoreu_epi16  (bytes + pos, notwhite, x);
+    pos += _popcnt64(notwhite);
+  }
+  for (; i < howmany; i++) {
+    char c = bytes[i];
+    if (c == '\r' || c == '\n' || c == ' ') {
+      continue;
+    }
+    bytes[pos++] = c;
+  }
+  return pos;
+}
+
+#endif // __AVX512VBMI2__
 #ifdef __SSE4_2__
 
 #include <x86intrin.h>

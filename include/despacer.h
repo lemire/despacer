@@ -11,4 +11,7 @@
 
 #include "./despacer_AVX2.h"
 
+#include "./despacer_AVX512.h"
+
+
 #endif

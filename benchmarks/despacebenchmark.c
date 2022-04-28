@@ -122,10 +122,8 @@ int main(int argc, char **argv) {
   char *tmpbuffer = origtmpbuffer + alignoffset;
   printf("pointer alignment = %d bytes \n",
          1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
-
   int repeat = 100;
   size_t howmanywhite;
-
   BEST_TIME_NOCHECK(memcpy(tmpbuffer, buffer, N),
                     howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(countspaces(buffer, N), howmanywhite,
@@ -169,7 +167,6 @@ int main(int argc, char **argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(avx2_despace_branchless_u2(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
-
 #endif
 #ifdef __SSE4_1__
   BEST_TIME_CHECK(sse4_despace(buffer, N), N - howmanywhite,
@@ -190,12 +187,15 @@ int main(int argc, char **argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
 #ifdef __SSE4_2__
-
   BEST_TIME_CHECK(sse42_despace_branchless(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse42_despace_branchless_lookup(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(sse42_despace_to(buffer, N, tmpbuffer), N - howmanywhite,
+                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+#endif
+#ifdef __AVX512VBMI2__ 
+  BEST_TIME_CHECK(vbmi2_despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
   free(origbuffer);
