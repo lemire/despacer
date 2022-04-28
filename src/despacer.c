@@ -875,21 +875,16 @@ size_t vbmi2_256_despace(char *bytes, size_t howmany) {
 size_t vbmi2_despace(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m512i spaces = _mm512_set1_epi8(' ');
-  __m512i newline = _mm512_set1_epi8('\n');
-  __m512i carriage = _mm512_set1_epi8('\r');
   size_t i = 0;
   for (; i + 63 < howmany; i += 64) {
     __m512i x = _mm512_loadu_si512((const __m512i *)(bytes + i));
-    __mmask64  notspaces = _mm512_cmpneq_epi8_mask (x, spaces);
-    __mmask64  notnewline = _mm512_cmpneq_epi8_mask (x, newline);
-    __mmask64  notcarriage = _mm512_cmpneq_epi8_mask (x, carriage);
-    __mmask64  notwhite = notspaces & notnewline & notcarriage;
+    __mmask64  notwhite = _mm512_cmpgt_epi8_mask  (x, spaces);
     _mm512_mask_compressstoreu_epi16  (bytes + pos, notwhite, x);
     pos += _popcnt64(notwhite);
   }
   for (; i < howmany; i++) {
     char c = bytes[i];
-    if (c == '\r' || c == '\n' || c == ' ') {
+    if (c <= ' ') {
       continue;
     }
     bytes[pos++] = c;
