@@ -879,7 +879,7 @@ size_t vbmi2_despace(char *bytes, size_t howmany) {
   for (; i + 63 < howmany; i += 64) {
     __m512i x = _mm512_loadu_si512((const __m512i *)(bytes + i));
     __mmask64  notwhite = _mm512_cmpgt_epi8_mask  (x, spaces);
-    _mm512_mask_compressstoreu_epi16  (bytes + pos, notwhite, x);
+    _mm512_mask_compressstoreu_epi8  (bytes + pos, notwhite, x);
     pos += _popcnt64(notwhite);
   }
   for (; i < howmany; i++) {
