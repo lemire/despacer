@@ -56,7 +56,7 @@ double timespent() {
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
       clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                  \
       test;                                                                    \
-      clock_gettime(CLOCK_REALTIME, &end);RDTSC_FINAL(tm2);                    \
+      RDTSC_FINAL(tm2);clock_gettime(CLOCK_REALTIME, &end);                    \
       uint64_t tmus = tm2 - tm1;                                               \
       double ts = timespent();                                                 \
       if (tmus < min_diff)                                                     \
@@ -87,7 +87,7 @@ double timespent() {
       clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                  \
       if (test != check)                                                       \
         printf("bug");                                                         \
-      clock_gettime(CLOCK_REALTIME, &end);RDTSC_FINAL(tm2);                    \
+      RDTSC_FINAL(tm2); clock_gettime(CLOCK_REALTIME, &end);                   \
       uint64_t tmus = tm2 - tm1;                                               \
       double ts = timespent();                                                 \
       if (tmus < min_diff)                                                     \
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
 #ifdef __SSSE3__
   gen_table_512kb();
 #endif
-  const int N = 1024*15;
+  const int N = 1024*10;
   int alignoffset = 0;
   if (argc > 1) {
     alignoffset = atoi(argv[1]);
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
   char *tmpbuffer = origtmpbuffer + alignoffset;
   printf("pointer alignment = %d bytes \n",
          1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
-  int repeat = 1000;
+  int repeat = 100;
   size_t howmanywhite;
   BEST_TIME_NOCHECK(memcpy(tmpbuffer, buffer, N),
                     howmanywhite = fillwithtext(buffer, N), repeat, N);
@@ -216,5 +216,5 @@ int main(int argc, char **argv) {
 #endif
   free(origbuffer);
   free(origtmpbuffer);
-  print("Warning: the estimated speed is for illustrative purposes and may not be accurate.\n");
+  printf("Warning: the estimated speed is for illustrative purposes and may not be accurate.\n");
 }
