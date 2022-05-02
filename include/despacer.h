@@ -1,5 +1,7 @@
 #ifndef DESPACER_H
 #define DESPACER_H
+#include <stdint.h>
+#include <stddef.h>
 
 #include "./despacer_generic.h"
 

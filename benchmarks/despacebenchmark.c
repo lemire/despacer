@@ -1,18 +1,18 @@
 #define _POSIX_C_SOURCE 199309L
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <time.h>    // for clock_t, clock()
 #include "./clock_gettime.h"
-#include <stdint.h>
-#include <string.h>
 #include "despacer.h"
+#include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h> // for clock_t, clock()
 struct timespec start;
 struct timespec end;
 // time spent in nanoseconds
 double timespent() {
   return (end.tv_sec - start.tv_sec) * 1000000000 +
-                        (end.tv_nsec - start.tv_nsec) ;
+         (end.tv_nsec - start.tv_nsec);
 }
 #define RDTSC_START(cycles)                                                    \
   do {                                                                         \
@@ -43,60 +43,77 @@ double timespent() {
     printf("%-50s: ", #test);                                                  \
     fflush(NULL);                                                              \
     uint64_t tm1, tm2;                                                         \
-    uint64_t min_diff = (uint64_t)-1;double overhead=1e200;double t=1e200;                           \
-    for (int i = 0; i < 10; i++) {                                         \
-      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      clock_gettime(CLOCK_REALTIME, &start);                                   \
-      clock_gettime(CLOCK_REALTIME, &end);                    \
-      double ts = timespent();                                                 \
-      if(ts < overhead) overhead = ts;\
+    uint64_t min_diff = (uint64_t)-1;                                          \
+    double t = 1e200;                                                          \
+    clock_gettime(CLOCK_REALTIME, &start);                                     \
+    RDTSC_START(tm1);                                                          \
+    for (int i = 0; i < repeat; i++) {                                         \
+      pre;                                                                     \
+      test;                                                                    \
     }                                                                          \
+    RDTSC_FINAL(tm2);                                                          \
+    clock_gettime(CLOCK_REALTIME, &end);                                       \
+    double frequency = (tm2 - tm1) / timespent();                              \
+    printf(" base frequency  %.2f GHz", frequency);                            \
     for (int i = 0; i < repeat; i++) {                                         \
       pre;                                                                     \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                  \
+      clock_gettime(CLOCK_REALTIME, &start);                                   \
+      RDTSC_START(tm1);                                                        \
       test;                                                                    \
-      RDTSC_FINAL(tm2);clock_gettime(CLOCK_REALTIME, &end);                    \
+      RDTSC_FINAL(tm2);                                                        \
+      clock_gettime(CLOCK_REALTIME, &end);                                     \
       uint64_t tmus = tm2 - tm1;                                               \
       double ts = timespent();                                                 \
       if (tmus < min_diff)                                                     \
         min_diff = tmus;                                                       \
-      if(ts < t) t = ts;\
+      if (ts < t)                                                              \
+        t = ts;                                                                \
     }                                                                          \
-    printf(" %f cycles / ops, %f GB/s", min_diff * 1.0 / number, number/(t-overhead));    \
+    printf(" speed: %.2f GB/s", frequency / min_diff * number);                \
     printf("\n");                                                              \
     fflush(NULL);                                                              \
   } while (0)
 
 #define BEST_TIME_CHECK(test, check, pre, repeat, number)                      \
   do {                                                                         \
-    printf("%-50s: ", #test);                                                     \
-    fflush(NULL);                                                              \
-    uint64_t tm1, tm2;                                                         \
-    uint64_t min_diff = (uint64_t)-1;double overhead=1e200;double t=1e200;                           \
-    for (int i = 0; i < 10; i++) {                                         \
-      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
+    for (int trial = 0; trial < 3; trial++) {                                  \
+      printf("%-50s: ", #test);                                                \
+      fflush(NULL);                                                            \
+      uint64_t tm1, tm2;                                                       \
+      uint64_t min_diff = (uint64_t)-1;                                        \
+      double t = 1e200;                                                        \
       clock_gettime(CLOCK_REALTIME, &start);                                   \
-      clock_gettime(CLOCK_REALTIME, &end);                    \
-      double ts = timespent();                                                 \
-      if(ts < overhead) overhead = ts;\
+      RDTSC_START(tm1);                                                        \
+      for (int i = 0; i < repeat; i++) {                                       \
+        pre;                                                                   \
+        if (test != check)                                                     \
+          printf("bug");                                                       \
+      }                                                                        \
+      RDTSC_FINAL(tm2);                                                        \
+      clock_gettime(CLOCK_REALTIME, &end);                                     \
+      double frequency = (tm2 - tm1) / timespent();                            \
+      printf(" base frequency  %.2f GHz", frequency);                          \
+      for (int i = 0; i < repeat; i++) {                                       \
+        pre;                                                                   \
+        __asm volatile("" ::: /* pretend to clobber */ "memory");              \
+        clock_gettime(CLOCK_REALTIME, &start);                                 \
+        RDTSC_START(tm1);                                                      \
+        if (test != check)                                                     \
+          printf("bug");                                                       \
+        RDTSC_FINAL(tm2);                                                      \
+        clock_gettime(CLOCK_REALTIME, &end);                                   \
+        uint64_t tmus = tm2 - tm1;                                             \
+        double ts = timespent();                                               \
+        if (tmus < min_diff)                                                   \
+          min_diff = tmus;                                                     \
+        if (ts < t)                                                            \
+          t = ts;                                                              \
+      }                                                                        \
+      printf(" speed: %.2f GB/s", frequency / min_diff * number);              \
+      printf("\n");                                                            \
+      fflush(NULL);                                                            \
     }                                                                          \
-    for (int i = 0; i < repeat; i++) {                                         \
-      pre;                                                                     \
-      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                  \
-      if (test != check)                                                       \
-        printf("bug");                                                         \
-      RDTSC_FINAL(tm2); clock_gettime(CLOCK_REALTIME, &end);                   \
-      uint64_t tmus = tm2 - tm1;                                               \
-      double ts = timespent();                                                 \
-      if (tmus < min_diff)                                                     \
-        min_diff = tmus;                                                       \
-      if(ts < t) t = ts;                                                       \
-    }                                                                          \
-    printf(" %f cycles / ops, %f GB/s", min_diff * 1.0 / number, number/(t-overhead));    \
-    printf("\n");                                                              \
-    fflush(NULL);                                                              \
   } while (0)
 
 // let us estimate that we have a 1% proba of hitting a white space
@@ -126,7 +143,7 @@ int main(int argc, char **argv) {
 #ifdef __SSSE3__
   gen_table_512kb();
 #endif
-  const int N = 1024*10;
+  const int N = 1024 * 8;
   int alignoffset = 0;
   if (argc > 1) {
     alignoffset = atoi(argv[1]);
@@ -169,8 +186,9 @@ int main(int argc, char **argv) {
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
   BEST_TIME_CHECK(despace_ssse3_lut_1kb(tmpbuffer, buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
-  BEST_TIME_CHECK(despace_ssse3_lut_512kb(tmpbuffer, buffer, N), N - howmanywhite,
-                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME_CHECK(despace_ssse3_lut_512kb(tmpbuffer, buffer, N),
+                  N - howmanywhite, howmanywhite = fillwithtext(buffer, N),
+                  repeat, N);
 #endif
 #ifdef __AVX2__
   BEST_TIME_CHECK(avx2_countspaces(buffer, N), howmanywhite,
@@ -210,11 +228,12 @@ int main(int argc, char **argv) {
   BEST_TIME_CHECK(sse42_despace_to(buffer, N, tmpbuffer), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
-#ifdef __AVX512VBMI2__ 
+#ifdef __AVX512VBMI2__
   BEST_TIME_CHECK(vbmi2_despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
 #endif
   free(origbuffer);
   free(origtmpbuffer);
-  printf("Warning: the estimated speed is for illustrative purposes and may not be accurate.\n");
+  printf("Warning: the estimated speed is for illustrative purposes and may "
+         "not be accurate.\n");
 }
