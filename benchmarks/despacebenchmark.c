@@ -9,9 +9,9 @@
 #include "despacer.h"
 struct timespec start;
 struct timespec end;
-
+// time spent in nanoseconds
 double timespent() {
-  return (end.tv_sec - start.tv_sec) +
+  return (end.tv_sec - start.tv_sec) * 1000000000 +
                         (end.tv_nsec - start.tv_nsec) ;
 }
 #define RDTSC_START(cycles)                                                    \
@@ -40,21 +40,30 @@ double timespent() {
 
 #define BEST_TIME_NOCHECK(test, pre, repeat, number)                           \
   do {                                                                         \
-    printf("%-50s: ", #test);                                                     \
+    printf("%-50s: ", #test);                                                  \
     fflush(NULL);                                                              \
     uint64_t tm1, tm2;                                                         \
-    uint64_t min_diff = (uint64_t)-1;                                          \
+    uint64_t min_diff = (uint64_t)-1;double overhead=1e200;double t=1e200;                           \
+    for (int i = 0; i < 10; i++) {                                         \
+      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
+      clock_gettime(CLOCK_REALTIME, &start);                                   \
+      clock_gettime(CLOCK_REALTIME, &end);                    \
+      double ts = timespent();                                                 \
+      if(ts < overhead) overhead = ts;\
+    }                                                                          \
     for (int i = 0; i < repeat; i++) {                                         \
       pre;                                                                     \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      RDTSC_START(tm1);                                                        \
+      clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                  \
       test;                                                                    \
-      RDTSC_FINAL(tm2);                                                        \
+      clock_gettime(CLOCK_REALTIME, &end);RDTSC_FINAL(tm2);                    \
       uint64_t tmus = tm2 - tm1;                                               \
+      double ts = timespent();                                                 \
       if (tmus < min_diff)                                                     \
         min_diff = tmus;                                                       \
+      if(ts < t) t = ts;\
     }                                                                          \
-    printf(" %f cycles / ops", min_diff * 1.0 / number);                       \
+    printf(" %f cycles / ops, %f GB/s", min_diff * 1.0 / number, number/(t-overhead));    \
     printf("\n");                                                              \
     fflush(NULL);                                                              \
   } while (0)
@@ -64,21 +73,28 @@ double timespent() {
     printf("%-50s: ", #test);                                                     \
     fflush(NULL);                                                              \
     uint64_t tm1, tm2;                                                         \
-    uint64_t min_diff = (uint64_t)-1;double t=1e200;                     \
+    uint64_t min_diff = (uint64_t)-1;double overhead=1e200;double t=1e200;                           \
+    for (int i = 0; i < 10; i++) {                                         \
+      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
+      clock_gettime(CLOCK_REALTIME, &start);                                   \
+      clock_gettime(CLOCK_REALTIME, &end);                    \
+      double ts = timespent();                                                 \
+      if(ts < overhead) overhead = ts;\
+    }                                                                          \
     for (int i = 0; i < repeat; i++) {                                         \
       pre;                                                                     \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                                                        \
+      clock_gettime(CLOCK_REALTIME, &start);RDTSC_START(tm1);                  \
       if (test != check)                                                       \
         printf("bug");                                                         \
-      clock_gettime(CLOCK_REALTIME, &end);RDTSC_FINAL(tm2);                                                        \
+      clock_gettime(CLOCK_REALTIME, &end);RDTSC_FINAL(tm2);                    \
       uint64_t tmus = tm2 - tm1;                                               \
-      double ts = timespent(); \
+      double ts = timespent();                                                 \
       if (tmus < min_diff)                                                     \
         min_diff = tmus;                                                       \
-      if(ts < t) t = ts;\
+      if(ts < t) t = ts;                                                       \
     }                                                                          \
-    printf(" %f cycles / ops, %f GB/s", min_diff * 1.0 / number, number/t);    \
+    printf(" %f cycles / ops, %f GB/s", min_diff * 1.0 / number, number/(t-overhead));    \
     printf("\n");                                                              \
     fflush(NULL);                                                              \
   } while (0)
@@ -110,7 +126,7 @@ int main(int argc, char **argv) {
 #ifdef __SSSE3__
   gen_table_512kb();
 #endif
-  const int N = 1024;
+  const int N = 1024*15;
   int alignoffset = 0;
   if (argc > 1) {
     alignoffset = atoi(argv[1]);
@@ -122,7 +138,7 @@ int main(int argc, char **argv) {
   char *tmpbuffer = origtmpbuffer + alignoffset;
   printf("pointer alignment = %d bytes \n",
          1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
-  int repeat = 100;
+  int repeat = 1000;
   size_t howmanywhite;
   BEST_TIME_NOCHECK(memcpy(tmpbuffer, buffer, N),
                     howmanywhite = fillwithtext(buffer, N), repeat, N);
