@@ -216,4 +216,5 @@ int main(int argc, char **argv) {
 #endif
   free(origbuffer);
   free(origtmpbuffer);
+  print("Warning: the estimated speed is for illustrative purposes and may not be accurate.\n");
 }
