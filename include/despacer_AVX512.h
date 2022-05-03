@@ -1,4 +1,4 @@
-#ifdef __SSE4_2__
+#ifdef __AVX512VBMI2__
 
 #include <x86intrin.h>
 
