@@ -221,8 +221,8 @@ size_t despace64(char *bytes, size_t howmany) {
 * Result is stored in "out", where the caller is responsible for memory
 * allocation.
 */
-size_t despace_to(const char *__restrict__ bytes, size_t howmany,
-                                char *__restrict__ out) {
+size_t despace_to(const char *restrict bytes, size_t howmany,
+                                char *restrict out) {
   size_t pos = 0;
   for (size_t i = 0; i < howmany; i++) {
     char c = bytes[i];
@@ -915,8 +915,8 @@ size_t vbmi2_despace(char *bytes, size_t howmany) {
 #include <x86intrin.h>
 #endif
 
-size_t sse42_despace_to(const char *__restrict__ bytes,
-                                      size_t howmany, char *__restrict__ out) {
+size_t sse42_despace_to(const char *restrict bytes,
+                                      size_t howmany, char *restrict out) {
   size_t pos = 0;
   __m128i targetchars =
       _mm_set_epi8(' ', '\n', '\r', ' ', ' ', '\n', '\r', ' ', ' ', '\n', '\r',
