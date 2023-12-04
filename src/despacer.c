@@ -9,6 +9,12 @@
 
 #include "./despacer_tables.h"
 
+#ifdef _MSC_VER
+#define really_inline __forceinline
+#else
+#define really_inline inline __attribute__((always_inline))
+#endif
+
 int jump_table[256] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -328,8 +334,8 @@ size_t sse4_despace_branchless32(char *bytes, size_t howmany) {
   return pos;
 }
 
-__m128i cleanm128(__m128i x, __m128i spaces, __m128i newline,
-                                __m128i carriage, int *mask16) {
+static really_inline __m128i cleanm128(__m128i x, __m128i spaces, __m128i newline,
+                                __m128i carriage, uint64_t *mask16) {
   __m128i xspaces = _mm_cmpeq_epi8(x, spaces);
   __m128i xnewline = _mm_cmpeq_epi8(x, newline);
   __m128i xcarriage = _mm_cmpeq_epi8(x, carriage);
@@ -515,7 +521,7 @@ static uint64_t thintable_epi8[256]={
 
 // unlike cleanm128, we just eliminate everything that is < 0x20
 // credit: Anime Tosho
-__m128i skinnycleanm128(__m128i x, int *mask16) {
+static really_inline __m128i skinnycleanm128(__m128i x, uint64_t *mask16) {
   __m128i constant = _mm_set1_epi8((char)(0xFF - 0x21));
   __m128i satadd = _mm_adds_epu8(x,constant);// anything >=0x21 will sum to 0xFF, rest is just under
   __m128i ones = _mm_set1_epi8(1);
@@ -1198,7 +1204,7 @@ bool avx2_hasspace(const char *bytes, size_t howmany) {
 	return false;
 }
 
-__m256i cleanm256(__m256i x, __m256i spaces, __m256i newline,
+static really_inline __m256i cleanm256(__m256i x, __m256i spaces, __m256i newline,
                                 __m256i carriage, unsigned int *mask1,
                                 unsigned int *mask2) {
   __m256i xspaces = _mm256_cmpeq_epi8(x, spaces);
