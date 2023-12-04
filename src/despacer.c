@@ -259,7 +259,7 @@ size_t sse4_despace(char *bytes, size_t howmany) {
     __m128i xnewline = _mm_cmpeq_epi8(x, newline);
     __m128i xcarriage = _mm_cmpeq_epi8(x, carriage);
     __m128i anywhite = _mm_or_si128(_mm_or_si128(xspaces, xnewline), xcarriage);
-    int mask16 = _mm_movemask_epi8(anywhite);
+    uint64_t mask16 = _mm_movemask_epi8(anywhite);
     if (mask16 == 0) { // no match!
       _mm_storeu_si128((__m128i *)(bytes + pos), x);
       pos += 16;
@@ -352,7 +352,7 @@ size_t sse4_despace_branchless_u4(char *bytes, size_t howmany) {
     __m128i x3 = _mm_loadu_si128((const __m128i *)(bytes + i + 32));
     __m128i x4 = _mm_loadu_si128((const __m128i *)(bytes + i + 48));
 
-    int mask16;
+    uint64_t mask16;
     x1 = cleanm128(x1, spaces, newline, carriage, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x1);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -371,7 +371,7 @@ size_t sse4_despace_branchless_u4(char *bytes, size_t howmany) {
   }
   for (; i + 16 - 1 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    int mask16;
+    uint64_t mask16;
     x = cleanm128(x, spaces, newline, carriage, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -395,7 +395,7 @@ size_t sse4_despace_branchless_u2(char *bytes, size_t howmany) {
   for (; i + 32 - 1 < howmany; i += 32) {
     __m128i x1 = _mm_loadu_si128((const __m128i *)(bytes + i));
     __m128i x2 = _mm_loadu_si128((const __m128i *)(bytes + i + 16));
-    int mask16;
+    uint64_t mask16;
     x1 = cleanm128(x1, spaces, newline, carriage, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x1);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -406,7 +406,7 @@ size_t sse4_despace_branchless_u2(char *bytes, size_t howmany) {
   }
   for (; i + 16 - 1 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    int mask16;
+    uint64_t mask16;
     x = cleanm128(x, spaces, newline, carriage, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -520,10 +520,10 @@ __m128i skinnycleanm128(__m128i x, int *mask16) {
   __m128i satadd = _mm_adds_epu8(x,constant);// anything >=0x21 will sum to 0xFF, rest is just under
   __m128i ones = _mm_set1_epi8(1);
   __m128i sataddplusone = _mm_add_epi8(satadd,ones);// 0xFF + 1 = 0
-  int mask =  _mm_movemask_epi8(sataddplusone);
+  uint64_t mask =  _mm_movemask_epi8(sataddplusone);
   *mask16 = mask;
-  int mask1 = mask & 0xFF;
-  int mask2 = (mask >> 8) & 0xFF;
+  uint64_t mask1 = mask & 0xFF;
+  uint64_t mask2 = (mask >> 8) & 0xFF;
   __m128i shufmask = _mm_castps_si128(_mm_loadh_pi(
         _mm_castsi128_ps(
           _mm_loadl_epi64((const __m128i *)(thintable_epi8 + mask1))
@@ -547,7 +547,7 @@ size_t sse4_despace_skinny_u4(char *bytes, size_t howmany) {
     __m128i x3 = _mm_loadu_si128((const __m128i *)(bytes + i + 32));
     __m128i x4 = _mm_loadu_si128((const __m128i *)(bytes + i + 48));
 
-    int mask16;
+    uint64_t mask16;
     x1 = skinnycleanm128(x1, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x1);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -566,7 +566,7 @@ size_t sse4_despace_skinny_u4(char *bytes, size_t howmany) {
   }
   for (; i + 16 - 1 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    int mask16;
+    uint64_t mask16;
     x = skinnycleanm128(x, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -589,7 +589,7 @@ size_t sse4_despace_skinny_u2(char *bytes, size_t howmany) {
     __m128i x1 = _mm_loadu_si128((const __m128i *)(bytes + i));
     __m128i x2 = _mm_loadu_si128((const __m128i *)(bytes + i + 16));
 
-    int mask16;
+    uint64_t mask16;
     x1 = skinnycleanm128(x1, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x1);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -600,7 +600,7 @@ size_t sse4_despace_skinny_u2(char *bytes, size_t howmany) {
   }
   for (; i + 16 - 1 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    int mask16;
+    uint64_t mask16;
     x = skinnycleanm128(x, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -637,7 +637,7 @@ size_t sse4_despace_trail(char *bytes, size_t howmany) {
     __m128i xnewline = _mm_cmpeq_epi8(x, newline);
     __m128i xcarriage = _mm_cmpeq_epi8(x, carriage);
     __m128i anywhite = _mm_or_si128(_mm_or_si128(xspaces, xnewline), xcarriage);
-    int mask16 = _mm_movemask_epi8(anywhite);
+    uint64_t mask16 = _mm_movemask_epi8(anywhite);
     if (mask16 == 0) { // no match!
       _mm_storeu_si128((__m128i *)(bytes + pos), x);
       pos += 16;
@@ -833,7 +833,7 @@ size_t despace_ssse3_lut_512kb( void* dst_void, void* src_void, size_t length )
 		__m128i v = _mm_loadu_si128(src++);
 		__m128i bytemask = _mm_or_si128(_mm_cmpeq_epi8(mask_20, v),
 			_mm_shuffle_epi8(lut_cntrl, _mm_adds_epu8(mask_70, v)));
-		int bitmask = _mm_movemask_epi8(bytemask);
+		uint64_t bitmask = _mm_movemask_epi8(bytemask);
 		v = _mm_shuffle_epi8(v, _mm_load_si128(&lut_1mb[bitmask & 0x7FFF]));
 		_mm_storeu_si128((__m128i*)dst, v);
 		__m128i hsum = _mm_sad_epu8(_mm_add_epi8(bytemask, mask_01), _mm_setzero_si128());
@@ -989,7 +989,7 @@ size_t sse42_despace_branchless_lookup(char *bytes,
   size_t i = 0;
   for (; i + 15 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    int mask16 = _mm_cvtsi128_si32(
+    unsigned int mask16 = _mm_cvtsi128_si32(
         _mm_cmpestrm(targetchars, 3, x, 16,
                      _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK));
     x = _mm_shuffle_epi8(
@@ -1233,15 +1233,15 @@ size_t avx2_despace_branchless(char *bytes, size_t howmany) {
     __m256i x = _mm256_loadu_si256((const __m256i *)(bytes + i));
     unsigned int masklow, maskhigh;
     x = cleanm256(x, spaces256, newline256, carriage256, &masklow, &maskhigh);
-    int offset1 = 16 - _mm_popcnt_u32(masklow);
-    int offset2 = 16 - _mm_popcnt_u32(maskhigh);
+    unsigned int offset1 = 16 - _mm_popcnt_u32(masklow);
+    unsigned int offset2 = 16 - _mm_popcnt_u32(maskhigh);
     _mm256_storeu2_m128i((__m128i *)(bytes + pos + offset1),
                          (__m128i *)(bytes + pos), x);
     pos += offset1 + offset2;
   }
   for (; i + 16 - 1 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    int mask16;
+    uint64_t mask16;
     x = cleanm128(x, spaces, newline, carriage, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x);
     pos += 16 - _mm_popcnt_u32(mask16);
@@ -1268,7 +1268,7 @@ size_t avx2_despace_branchless_u2(char *bytes, size_t howmany) {
   size_t i = 0;
   for (; i + 64 - 1 < howmany; i += 64) {
     __m256i x1, x2;
-    int offset11, offset12, offset21, offset22;
+    unsigned int offset11, offset12, offset21, offset22;
     unsigned int masklow1, maskhigh1, masklow2, maskhigh2;
 
     x1 = _mm256_loadu_si256((const __m256i *)(bytes + i));
@@ -1295,7 +1295,7 @@ size_t avx2_despace_branchless_u2(char *bytes, size_t howmany) {
   for (; i + 32 - 1 < howmany; i += 32) {
     unsigned int masklow, maskhigh;
 
-    int offset1, offset2;
+    unsigned int offset1, offset2;
     __m256i x = _mm256_loadu_si256((const __m256i *)(bytes + i));
     x = cleanm256(x, spaces256, newline256, carriage256, &masklow, &maskhigh);
     offset1 = 16 - _mm_popcnt_u32(masklow);
@@ -1306,7 +1306,7 @@ size_t avx2_despace_branchless_u2(char *bytes, size_t howmany) {
   }
   for (; i + 16 - 1 < howmany; i += 16) {
     __m128i x = _mm_loadu_si128((const __m128i *)(bytes + i));
-    int mask16;
+    uint64_t mask16;
     x = cleanm128(x, spaces, newline, carriage, &mask16);
     _mm_storeu_si128((__m128i *)(bytes + pos), x);
     pos += 16 - _mm_popcnt_u32(mask16);
