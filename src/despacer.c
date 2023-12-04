@@ -1027,7 +1027,6 @@ size_t sse42_despace_branchless_lookup(char *bytes,
 #endif
 
 #ifdef __AVX2__
-
 #ifdef _MSC_VER
 #include <xmmintrin.h>
 #include <mmintrin.h>

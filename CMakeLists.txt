@@ -12,10 +12,11 @@ set_target_properties(despacer PROPERTIES POSITION_INDEPENDENT_CODE ON) #-fPIC
 target_compile_features(despacer PRIVATE "c_std_99")
 
 message(STATUS "CMAKE_SYSTEM_PROCESSOR = ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_C_COMPILER_ID}")
+
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR  "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL AMD64)
-  if(MSVC)
-    target_compile_options(despacer PRIVATE /arch:native)
-  else()
+   if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    message(STATUS "compiling with -march=native")
     target_compile_options(despacer PRIVATE -march=native)
   endif()
 endif()
