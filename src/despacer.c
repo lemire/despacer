@@ -236,7 +236,13 @@ size_t despace_to(const char *__restrict__ bytes, size_t howmany,
 
 #ifdef __SSE4_1__
 
+#ifdef _MSC_VER
+#include <xmmintrin.h>
+#include <mmintrin.h>
+#include <immintrin.h>
+#else
 #include <x86intrin.h>
+#endif
 
 /**
 * remove spaces (in-place) from string bytes (UTF-8 or ASCII) containing
@@ -846,7 +852,13 @@ size_t despace_ssse3_lut_512kb( void* dst_void, void* src_void, size_t length )
 #endif
 
 #ifdef __AVX512VBMI2__ 
+#ifdef _MSC_VER
+#include <xmmintrin.h>
+#include <mmintrin.h>
+#include <immintrin.h>
+#else
 #include <x86intrin.h>
+#endif
 size_t vbmi2_256_despace(char *bytes, size_t howmany) {
   size_t pos = 0;
   __m256i spaces = _mm256_set1_epi8(' ');
@@ -895,7 +907,13 @@ size_t vbmi2_despace(char *bytes, size_t howmany) {
 #endif // __AVX512VBMI2__
 #ifdef __SSE4_2__
 
+#ifdef _MSC_VER
+#include <xmmintrin.h>
+#include <mmintrin.h>
+#include <immintrin.h>
+#else
 #include <x86intrin.h>
+#endif
 
 size_t sse42_despace_to(const char *__restrict__ bytes,
                                       size_t howmany, char *__restrict__ out) {
@@ -1010,24 +1028,12 @@ size_t sse42_despace_branchless_lookup(char *bytes,
 
 #ifdef __AVX2__
 
+#ifdef _MSC_VER
+#include <xmmintrin.h>
+#include <mmintrin.h>
+#include <immintrin.h>
+#else
 #include <x86intrin.h>
-
-#ifndef __clang__
-__m256i _mm256_loadu2_m128i(__m128i const *__addr_hi,
-                                          __m128i const *__addr_lo) {
-  __m256i __v256 = _mm256_castsi128_si256(_mm_loadu_si128(__addr_lo));
-  return _mm256_insertf128_si256(__v256, _mm_loadu_si128(__addr_hi), 1);
-}
-
-void _mm256_storeu2_m128i(__m128i *__addr_hi, __m128i *__addr_lo,
-                                        __m256i __a) {
-  __m128i __v128;
-
-  __v128 = _mm256_castsi256_si128(__a);
-  _mm_storeu_si128(__addr_lo, __v128);
-  __v128 = _mm256_extractf128_si256(__a, 1);
-  _mm_storeu_si128(__addr_hi, __v128);
-}
 #endif
 
 // credit: https://github.com/aqrit
