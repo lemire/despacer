@@ -1,4 +1,5 @@
 # despacer
+[![VS17-CI](https://github.com/lemire/despacer/actions/workflows/vs.yml/badge.svg)](https://github.com/lemire/despacer/actions/workflows/vs.yml)
 
 Fast C library to remove white space from strings (also called "strip white space").
 
