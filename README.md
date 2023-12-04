@@ -1,5 +1,4 @@
 # despacer
-[![CI](https://github.com/lemire/despacer/actions/workflows/CI.yml/badge.svg)](https://github.com/lemire/despacer/actions/workflows/CI.yml)
 
 Fast C library to remove white space from strings (also called "strip white space").
 
@@ -22,7 +21,7 @@ http://lemire.me/blog/2017/01/20/how-quickly-can-you-remove-spaces-from-a-string
 Make sure you have a recent cmake (3.15 or better):
 
 ```
-cmake -B build && cmake --build build
+cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build
 ```
 
 You may run tests by entering the  `build` repository and typing `ctest`.
