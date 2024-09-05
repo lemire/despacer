@@ -1,5 +1,7 @@
 #ifdef __SSSE3__
 
+#include <stddef.h>
+
 // credit: https://github.com/aqrit
 size_t despace_ssse3_cumsum( void* dst_void, void* src_void, size_t length );
 

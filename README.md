@@ -37,11 +37,22 @@ requires GCC/clang under x64 (it is otherwise omitted).
 
 ### D Bindings
 
-```
-cd ./bindings/d
-dub build --build=release
+Add this repository as a submodule to your project.
+
+```shell
+git submodule add https://github.com/lemire/despacer.git despacer
+git submodule update --init --recursive
 ```
 
+Then, add the following to your `dub.json` file.
+
+```json
+"dependencies": {
+    "despacer": {
+        "path": "./despacer"
+    }
+}
+```
 
 ### Benchmarks
 

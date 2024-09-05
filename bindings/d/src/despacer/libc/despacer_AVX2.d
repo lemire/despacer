@@ -1,4 +1,4 @@
-module despacer.libc.despacer_generic;
+module despacer.libc.despacer_AVX2;
 
 import core.stdc.config;
 import core.stdc.stdarg : va_list;
@@ -20,7 +20,7 @@ struct UInt128
 struct __locale_data
 {
   int dummy;
-}
+} // FIXME
 
 alias _Bool = bool;
 struct dpp
@@ -29,7 +29,7 @@ struct dpp
   {
     void[N] bytes;
   }
-
+  // Replacement for the gcc/clang intrinsic
   static bool isEmpty(T)()
   {
     return T.tupleof.length == 0;
@@ -39,7 +39,8 @@ struct dpp
   {
     T* ptr;
   }
-
+  // dmd bug causes a crash if T is passed by value.
+  // Works fine with ldc.
   static auto move(T)(ref T value)
   {
     return Move!T(&value);
@@ -75,16 +76,30 @@ struct dpp
 
 extern (C)
 {
-  ulong despace_to(const(char)*, ulong, char*) @nogc nothrow;
-  ulong despace64(char*, ulong) @nogc nothrow;
-  bool hasspace(const(char)*, ulong) @nogc nothrow;
-  ulong countspaces32(const(char)*, ulong) @nogc nothrow;
-  ulong countspaces(const(char)*, ulong) @nogc nothrow;
-  ulong faster_despace32(char*, ulong) @nogc nothrow;
-  ulong faster_despace(char*, ulong) @nogc nothrow;
-  ulong despace32(char*, ulong) @nogc nothrow;
-  ulong despace_table(void*, void*, ulong) @nogc nothrow;
-  ulong despace_cmov(void*, void*, ulong) @nogc nothrow;
-  ulong despace_branchless(void*, void*, ulong) @nogc nothrow;
-  ulong despace(char*, ulong) @nogc nothrow;
+
+  size_t despace_avx2_vpermd(void*, void*, size_t) @nogc nothrow;
+  /**
+* remove spaces (in-place) from string bytes (UTF-8 or ASCII) containing
+* "howmany"
+* characters (not counting the null character if a C string is used), returns
+* the new number of characters
+* this function does add the null character, you have to do it yourself if you
+* need it.
+*/
+  size_t avx2_despace(char*, size_t) @nogc nothrow;
+
+  size_t avx2_countspaces(const(char)*, size_t) @nogc nothrow;
+  /** Check if the given bytes with length howmany have space among them */
+  bool avx2_hasspace(const(char)*, size_t) @nogc nothrow;
+
+  __m256i cleanm256(__m256i, __m256i, __m256i, __m256i, uint*, uint*) @nogc nothrow;
+
+  size_t avx2_despace_branchless(char*, size_t) @nogc nothrow;
+
+  size_t avx2_despace_branchless_u2(char*, size_t) @nogc nothrow;
 }
+
+import core.simd;
+
+alias __m128i = long2;
+alias __m256i = __vector(long[4]);

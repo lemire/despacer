@@ -1,4 +1,4 @@
-module despacer.libc.despacer_SSE4_1;
+module despacer.libc.despacer_SSSE3;
 
 import core.stdc.config;
 import core.stdc.stdarg : va_list;
@@ -20,7 +20,7 @@ struct UInt128
 struct __locale_data
 {
   int dummy;
-}
+} // FIXME
 
 alias _Bool = bool;
 struct dpp
@@ -29,7 +29,7 @@ struct dpp
   {
     void[N] bytes;
   }
-
+  // Replacement for the gcc/clang intrinsic
   static bool isEmpty(T)()
   {
     return T.tupleof.length == 0;
@@ -39,7 +39,8 @@ struct dpp
   {
     T* ptr;
   }
-
+  // dmd bug causes a crash if T is passed by value.
+  // Works fine with ldc.
   static auto move(T)(ref T value)
   {
     return Move!T(&value);
@@ -75,14 +76,12 @@ struct dpp
 
 extern (C)
 {
-  ulong sse4_despace(char*, ulong) @nogc nothrow;
-  ulong sse4_despace_branchless(char*, ulong) @nogc nothrow;
-  ulong sse4_despace_branchless32(char*, ulong) @nogc nothrow;
-  core.simd.long2 cleanm128(core.simd.long2, core.simd.long2, core.simd.long2, core.simd.long2, int*) @nogc nothrow;
-  ulong sse4_despace_branchless_u4(char*, ulong) @nogc nothrow;
-  ulong sse4_despace_branchless_u2(char*, ulong) @nogc nothrow;
-  core.simd.long2 skinnycleanm128(core.simd.long2, int*) @nogc nothrow;
-  ulong sse4_despace_skinny_u4(char*, ulong) @nogc nothrow;
-  ulong sse4_despace_skinny_u2(char*, ulong) @nogc nothrow;
-  ulong sse4_despace_trail(char*, ulong) @nogc nothrow;
+
+  void gen_table_512kb() @nogc nothrow;
+
+  size_t despace_ssse3_lut_512kb(void*, void*, size_t) @nogc nothrow;
+
+  size_t despace_ssse3_lut_1kb(void*, void*, size_t) @nogc nothrow;
+
+  size_t despace_ssse3_cumsum(void*, void*, size_t) @nogc nothrow;
 }
