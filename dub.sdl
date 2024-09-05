@@ -1,0 +1,24 @@
+name "despacer"
+description "Fast library to remove white space from strings"
+authors "Amin Yahyaabadi"
+copyright "Copyright © 2021, Amin Yahyaabadi"
+license "BSD-3-Clause License"
+
+targetType "library"
+targetName "despacer"
+
+sourcePaths "./bindings/d/src/"
+importPaths "./bindings/d/src/"
+
+libs "$PACKAGE_DIR/build/despacer" platform="windows"
+lflags "$PACKAGE_DIR/build/despacer.a" platform="posix"
+libs "msvcrt" platform="windows"
+lflags "/NODEFAULTLIB:libcmt" "/NODEFAULTLIB:msvcrtd" platform="windows-dmd"
+dflags "--link-internally" platform="windows-ldc"
+
+// support SIMD
+dflags "-mcpu=native"
+
+preBuildCommands "cmake -S ./ -B ./build && cmake --build ./build --config Release"
+
+extraDependencyFiles "./CMakeLists.txt" "./include/**/*" "./src/**/*"

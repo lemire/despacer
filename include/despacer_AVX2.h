@@ -1,7 +1,9 @@
 #ifdef __AVX2__
 
-#include <x86intrin.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <x86intrin.h>
 
 #ifndef __clang__
 

@@ -1,5 +1,6 @@
 #ifdef __SSE4_2__
 
+#include <stddef.h>
 #include <x86intrin.h>
 
 size_t sse42_despace_to(const char *__restrict__ bytes, size_t howmany, char *__restrict__ out);

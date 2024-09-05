@@ -20,7 +20,7 @@ struct UInt128
 struct __locale_data
 {
   int dummy;
-}
+} // FIXME
 
 alias _Bool = bool;
 struct dpp
@@ -29,7 +29,7 @@ struct dpp
   {
     void[N] bytes;
   }
-
+  // Replacement for the gcc/clang intrinsic
   static bool isEmpty(T)()
   {
     return T.tupleof.length == 0;
@@ -39,7 +39,8 @@ struct dpp
   {
     T* ptr;
   }
-
+  // dmd bug causes a crash if T is passed by value.
+  // Works fine with ldc.
   static auto move(T)(ref T value)
   {
     return Move!T(&value);
@@ -75,8 +76,12 @@ struct dpp
 
 extern (C)
 {
-  ulong sse42_despace_to(const(char)*, ulong, char*) @nogc nothrow;
-  ulong sse42_despace(char*, ulong) @nogc nothrow;
-  ulong sse42_despace_branchless(char*, ulong) @nogc nothrow;
-  ulong sse42_despace_branchless_lookup(char*, ulong) @nogc nothrow;
+
+  size_t sse42_despace_to(const(char)*, size_t, char*) @nogc nothrow;
+
+  size_t sse42_despace(char*, size_t) @nogc nothrow;
+
+  size_t sse42_despace_branchless(char*, size_t) @nogc nothrow;
+
+  size_t sse42_despace_branchless_lookup(char*, size_t) @nogc nothrow;
 }

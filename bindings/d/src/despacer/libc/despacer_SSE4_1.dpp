@@ -1,0 +1,8 @@
+module despacer.libc.despacer_SSE4_1;
+
+import core.simd;
+
+alias __m128i = long2;
+alias __m256i = __vector(long[4]);
+
+#include "despacer_SSE4_1.h"

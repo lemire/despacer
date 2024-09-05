@@ -36,3 +36,4 @@
 # D bindings
 .dub
 build
+dub.selections.json

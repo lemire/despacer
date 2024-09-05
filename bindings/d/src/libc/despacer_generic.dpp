@@ -1,3 +1,0 @@
-module despacer.libc.despacer_generic;
-
-#include "../../../../include/despacer_generic.h"

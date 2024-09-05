@@ -7,58 +7,42 @@ on:
 
 jobs:
   Test:
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
-        clang:
-          - 12
-        CC:
-          - clang
-        CXX:
-          - clang++
-        cmake:
-          - 3.20.2
-        ninja:
-          - 1.10.2
+          - macos-13
+          - windows-latest
+        compiler:
+          - llvm
         d:
-          - "ldc-beta"
+          - "ldc-latest"
           - "dmd-latest"
-    env:
-      CC: ${{ matrix.CC }}
-      CXX: ${{ matrix.CXX }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Cache
       - name: Cache
         id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.dub
             ~/AppData/Local/dub
-            ./llvm
-            C:/Program Files/LLVM
-          key: "cache--OS:${{ matrix.os }}-Clang:${{ matrix.clang }}-D:${{ matrix.d }}"
+          key: "cache--OS:${{ matrix.os }}"
 
       # Setup compilers and tools
 
-      - name: Setup LLVM
-        uses: KyleMayes/install-llvm-action@v1
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
         with:
-          version: ${{ matrix.clang }}
-          cached: ${{ steps.cache.outputs.cache-hit }}
-
-      - name: Setup Cmake and Ninja
-        uses: aminya/install-cmake@new-versions-and-arch
-        with:
-          cmake: ${{ matrix.cmake }}
-          ninja: ${{ matrix.ninja }}
+          compiler: ${{ matrix.compiler }}
+          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+          cmake: true
+          ninja: true
 
       # Build and Test
 
@@ -82,4 +66,3 @@ jobs:
         run: |
           dub build
           dub test
-        working-directory: ${{ github.workspace }}/bindings/d
