@@ -15,18 +15,19 @@ jobs:
         os:
           - ubuntu-latest
           - macos-13
+          - windows-latest
         compiler:
           - llvm
         d:
           - "ldc-latest"
           - "dmd-latest"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Cache
       - name: Cache
         id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.dub
