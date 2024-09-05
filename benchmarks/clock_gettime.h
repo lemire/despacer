@@ -1,6 +1,7 @@
 #if _WIN32 || _WIN64
 
 #include "windows.h"
+#include "time.h"
 
 #define CLOCK_REALTIME 1
 
