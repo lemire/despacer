@@ -10,7 +10,7 @@ targetName "despacer"
 sourcePaths "./bindings/d/src/"
 importPaths "./bindings/d/src/"
 
-libs "$PACKAGE_DIR/build/despacer" platform="windows"
+libs "$PACKAGE_DIR/build/Release/despacer" platform="windows"
 lflags "$PACKAGE_DIR/build/despacer.a" platform="posix"
 libs "msvcrt" platform="windows"
 lflags "/NODEFAULTLIB:libcmt" "/NODEFAULTLIB:msvcrtd" platform="windows-dmd"
@@ -19,6 +19,7 @@ dflags "--link-internally" platform="windows-ldc"
 // support SIMD
 dflags "-mcpu=native"
 
-preBuildCommands "cmake -S ./ -B ./build && cmake --build ./build --config Release"
+preBuildCommands "cmake -S ./ -B ./build -DBENCHMARKS=OFF -DUNIT_TESTS=OFF && cmake --build ./build --config Release" platform="posix"
+preBuildCommands "cmake -G \"Ninja Multi-Config\" -S ./ -B ./build -DBENCHMARKS=OFF -DUNIT_TESTS=OFF && cmake --build ./build --config Release" platform="windows"
 
 extraDependencyFiles "./CMakeLists.txt" "./include/**/*" "./src/**/*"
