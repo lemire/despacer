@@ -15,9 +15,13 @@ message(STATUS "CMAKE_SYSTEM_PROCESSOR = ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_C_COMPILER_ID}")
 
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR  "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL AMD64)
-   if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+   if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
     message(STATUS "compiling with -march=native")
     target_compile_options(despacer PRIVATE -march=native)
+  elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    message(STATUS "Assuming AVX2, SSE4.2, SSE4.1 support on MSVC")
+    target_compile_options(despacer PRIVATE /arch:AVX2)
+    target_compile_definitions(despacer PRIVATE __SSE4_1__ __SSE4_2__ __AVX2__)
   endif()
 endif()
 
@@ -52,5 +56,3 @@ if(BENCHMARKS)
       target_compile_features(despacer PRIVATE "c_std_11")
     endif()
 endif()
-
-
